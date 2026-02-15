@@ -1,14 +1,21 @@
 import { Resend } from 'resend';
 
-const apiKey = process.env.RESEND_API_KEY!;
-export const resend = new Resend(apiKey);
-
 const fromEmail = 'ScriptScope <onboarding@resend.dev>';
 const ownerEmail = process.env.OWNER_EMAIL || 'ariel@example.com';
 
+// Lazy initialization to avoid errors during build
+let resendClient: Resend | null = null;
+function getResend() {
+  if (!resendClient) {
+    const apiKey = process.env.RESEND_API_KEY || '';
+    resendClient = new Resend(apiKey);
+  }
+  return resendClient;
+}
+
 export async function sendReportReadyEmail(to: string, scriptTitle: string, reportUrl: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: fromEmail,
       to,
       subject: `Your ScriptScope Coverage is Ready`,
@@ -68,7 +75,7 @@ export async function sendReportReadyEmail(to: string, scriptTitle: string, repo
 
 export async function sendPurchaseConfirmationEmail(to: string, credits: number) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: fromEmail,
       to,
       subject: 'Thank you for your purchase - ScriptScope',
@@ -85,7 +92,7 @@ export async function sendPurchaseConfirmationEmail(to: string, credits: number)
 
 export async function sendAnalysisFailedEmail(to: string, scriptTitle: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: fromEmail,
       to,
       subject: 'Issue with Your Script Analysis - ScriptScope',
@@ -135,7 +142,7 @@ export async function sendAnalysisFailedEmail(to: string, scriptTitle: string) {
 
 export async function sendRefundIssuedEmail(to: string, credits: number) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: fromEmail,
       to,
       subject: 'Refund issued - ScriptScope',
@@ -159,7 +166,7 @@ export async function sendDailyDigestEmail(stats: {
   issues: string[];
 }) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: fromEmail,
       to: ownerEmail,
       subject: `ScriptScope Daily Digest - ${stats.date}`,
