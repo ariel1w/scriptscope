@@ -1,17 +1,25 @@
 import { TwitterApi } from 'twitter-api-v2';
 
-const client = new TwitterApi({
-  appKey: process.env.TWITTER_API_KEY!,
-  appSecret: process.env.TWITTER_API_SECRET!,
-  accessToken: process.env.TWITTER_ACCESS_TOKEN!,
-  accessSecret: process.env.TWITTER_ACCESS_SECRET!,
-});
+// Lazy initialization to avoid errors during build
+let twitterClient: ReturnType<TwitterApi['readWrite']> | null = null;
 
-const twitterClient = client.readWrite;
+function getTwitterClient() {
+  if (!twitterClient) {
+    const client = new TwitterApi({
+      appKey: process.env.TWITTER_API_KEY || 'placeholder',
+      appSecret: process.env.TWITTER_API_SECRET || 'placeholder',
+      accessToken: process.env.TWITTER_ACCESS_TOKEN || 'placeholder',
+      accessSecret: process.env.TWITTER_ACCESS_SECRET || 'placeholder',
+    });
+    twitterClient = client.readWrite;
+  }
+  return twitterClient;
+}
 
 export async function postTweet(content: string): Promise<string> {
   try {
-    const tweet = await twitterClient.v2.tweet(content);
+    const client = getTwitterClient();
+    const tweet = await client.v2.tweet(content);
     return tweet.data.id;
   } catch (error) {
     console.error('Failed to post tweet:', error);
