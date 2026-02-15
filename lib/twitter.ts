@@ -1,7 +1,7 @@
-import { TwitterApi } from 'twitter-api-v2';
+import { TwitterApi, TwitterApiReadWrite } from 'twitter-api-v2';
 
 // Lazy initialization to avoid errors during build
-let twitterClient: ReturnType<TwitterApi['readWrite']> | null = null;
+let twitterClient: TwitterApiReadWrite | null = null;
 
 function getTwitterClient() {
   if (!twitterClient) {
