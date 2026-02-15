@@ -33,7 +33,7 @@ export default function PricingCards() {
           .single();
 
         // Show offer if user hasn't used first discount
-        setShowFirstTimeOffer(userData && !userData.first_discount_used);
+        setShowFirstTimeOffer(Boolean(userData && !userData.first_discount_used));
       } catch (error) {
         console.error('Error checking first-time status:', error);
         setShowFirstTimeOffer(false);
