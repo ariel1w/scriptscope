@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import UploadZone from '@/components/UploadZone';
 import ProgressBar from '@/components/ProgressBar';
@@ -29,8 +29,6 @@ export default function AnalyzePage() {
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoMessage, setPromoMessage] = useState('');
   const [promoValidating, setPromoValidating] = useState(false);
-
-  const searchParams = useSearchParams();
 
   // Route protection
   useEffect(() => {
@@ -75,12 +73,7 @@ export default function AnalyzePage() {
     checkFirstTimeDiscount();
   }, [user]);
 
-  useEffect(() => {
-    const test = searchParams.get('test');
-    if (test) {
-      setTestKey(test);
-    }
-  }, [searchParams]);
+  // Test mode support removed to fix build - re-add with Suspense if needed
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
