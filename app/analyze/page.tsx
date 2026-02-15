@@ -9,6 +9,9 @@ import Results from '@/components/Results';
 
 type Step = 'upload' | 'email' | 'promo' | 'uploading' | 'success' | 'error';
 
+// Force dynamic rendering since this page uses auth and searchParams
+export const dynamic = 'force-dynamic';
+
 export default function AnalyzePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
