@@ -9,11 +9,6 @@ import Results from '@/components/Results';
 
 type Step = 'upload' | 'email' | 'promo' | 'uploading' | 'success' | 'error';
 
-// Disable static generation for this auth-protected page
-export const dynamic = 'force-dynamic';
-export const dynamicParams = true;
-export const revalidate = 0;
-
 export default function AnalyzePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
