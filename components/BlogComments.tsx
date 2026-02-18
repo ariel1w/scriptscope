@@ -84,15 +84,15 @@ export default function BlogComments({ postId }: BlogCommentsProps) {
 
   async function loadComments() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('blog_comments')
-      .select('*, ai_personas(avatar_url, username)')
-      .eq('post_id', postId)
-      .lte('created_at', new Date().toISOString()) // only show comments whose time has come
-      .order('created_at', { ascending: true });
-
-    if (error) console.error('Comments fetch error:', error);
-    if (data) setComments(data as Comment[]);
+    try {
+      const res = await fetch(`/api/comments/${postId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setComments(data);
+      }
+    } catch (err) {
+      console.error('Failed to load comments:', err);
+    }
     setLoading(false);
   }
 
@@ -102,34 +102,24 @@ export default function BlogComments({ postId }: BlogCommentsProps) {
 
     setSubmitting(true);
     try {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('email, name')
-        .eq('id', user.id)
-        .single();
+      // Get the session token to authenticate the API call
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session');
 
-      const authorName =
-        userData?.name ||
-        userData?.email?.split('@')[0] ||
-        user.email?.split('@')[0] ||
-        'Anonymous';
+      const res = await fetch(`/api/comments/${postId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ content: newComment.trim() }),
+      });
 
-      const { data, error } = await supabase
-        .from('blog_comments')
-        .insert({
-          post_id: postId,
-          user_id: user.id,
-          author_name: authorName,
-          content: newComment.trim(),
-        })
-        .select('*, ai_personas(avatar_url, username)')
-        .single();
+      if (!res.ok) throw new Error(await res.text());
 
-      if (error) throw error;
-      if (data) {
-        setComments([...comments, data as Comment]);
-        setNewComment('');
-      }
+      const data = await res.json();
+      setComments([...comments, data]);
+      setNewComment('');
     } catch (err) {
       console.error('Error posting comment:', err);
       alert('Failed to post comment. Please try again.');
@@ -141,7 +131,9 @@ export default function BlogComments({ postId }: BlogCommentsProps) {
   return (
     <div className="mt-12 pt-8 border-t border-gray-200">
       <h3 className="text-xl font-bold text-[#1E3A5F] mb-6">
-        {comments.length > 0 ? `${comments.length} Comment${comments.length !== 1 ? 's' : ''}` : 'Comments'}
+        {comments.length > 0
+          ? `${comments.length} Comment${comments.length !== 1 ? 's' : ''}`
+          : 'Comments'}
       </h3>
 
       {/* Comment form */}
@@ -191,7 +183,9 @@ export default function BlogComments({ postId }: BlogCommentsProps) {
                     {comment.author_name}
                   </span>
                   {comment.ai_personas?.username && (
-                    <span className="text-gray-400 text-xs">@{comment.ai_personas.username}</span>
+                    <span className="text-gray-400 text-xs">
+                      @{comment.ai_personas.username}
+                    </span>
                   )}
                   <span className="text-gray-400 text-xs ml-auto flex-shrink-0">
                     {formatDate(comment.created_at)}
