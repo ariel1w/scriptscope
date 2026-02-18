@@ -21,7 +21,13 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to load comments' }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
+  const ownerUserId = process.env.OWNER_USER_ID;
+  const annotated = (data ?? []).map((c) => ({
+    ...c,
+    is_owner: !!(ownerUserId && c.user_id === ownerUserId),
+  }));
+
+  return NextResponse.json(annotated);
 }
 
 // POST /api/comments/[postId] — requires auth, uses admin client to insert

@@ -16,6 +16,7 @@ interface Comment {
   created_at: string;
   user_id: string | null;
   persona_id: string | null;
+  is_owner: boolean;
   ai_personas: PersonaData | null;
 }
 
@@ -23,7 +24,7 @@ interface BlogCommentsProps {
   postId: string;
 }
 
-function Avatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
+function Avatar({ name, avatarUrl, isOwner }: { name: string; avatarUrl?: string | null; isOwner?: boolean }) {
   const initials = name
     .split(' ')
     .map((n) => n[0])
@@ -35,7 +36,7 @@ function Avatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }
     '#1E3A5F', '#2d6a4f', '#7b2d8b', '#b5451b',
     '#16a085', '#8e44ad', '#c0392b', '#d35400',
   ];
-  const bg = bgColors[name.charCodeAt(0) % bgColors.length];
+  const bg = isOwner ? '#c9a962' : bgColors[name.charCodeAt(0) % bgColors.length];
 
   if (avatarUrl) {
     return (
@@ -49,8 +50,8 @@ function Avatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }
 
   return (
     <div
-      className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-semibold"
-      style={{ backgroundColor: bg }}
+      className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-semibold"
+      style={{ backgroundColor: bg, color: isOwner ? '#0a1628' : '#fff' }}
     >
       {initials}
     </div>
@@ -172,17 +173,26 @@ export default function BlogComments({ postId }: BlogCommentsProps) {
       ) : comments.length > 0 ? (
         <div className="space-y-6">
           {comments.map((comment) => (
-            <div key={comment.id} className="flex gap-3">
+            <div
+              key={comment.id}
+              className={`flex gap-3 rounded-lg p-3 -mx-3 ${comment.is_owner ? 'bg-[#fdf7ed] border border-[#c9a962]/30' : ''}`}
+            >
               <Avatar
                 name={comment.author_name}
                 avatarUrl={comment.ai_personas?.avatar_url}
+                isOwner={comment.is_owner}
               />
               <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="font-semibold text-[#1E3A5F] text-sm">
                     {comment.author_name}
                   </span>
-                  {comment.ai_personas?.username && (
+                  {comment.is_owner && (
+                    <span className="text-[10px] font-bold tracking-wide uppercase px-1.5 py-0.5 rounded bg-[#c9a962] text-[#0a1628] leading-none">
+                      Host
+                    </span>
+                  )}
+                  {!comment.is_owner && comment.ai_personas?.username && (
                     <span className="text-gray-400 text-xs">
                       @{comment.ai_personas.username}
                     </span>
