@@ -4,6 +4,8 @@ import Link from 'next/link';
 import BlogComments from '@/components/BlogComments';
 import type { Metadata } from 'next';
 
+export const revalidate = 1800; // re-render every 30 min to pick up new comments
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const { data: post } = await supabaseAdmin

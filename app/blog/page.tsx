@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 export default async function BlogPage() {
   // Get published blog posts from content queue
   const { data: posts } = await supabaseAdmin
