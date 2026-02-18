@@ -159,6 +159,32 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Community Section */}
+      <section className="py-24 bg-[#fdf7ed] border-y border-[#c9a962]/20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="text-6xl mb-6">✍️</div>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#c9a962]/20 border border-[#c9a962]/40 mb-6">
+            <span className="text-[#7a5c1e] text-sm font-bold tracking-widest uppercase">Free Resource</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#0a1628] mb-6 leading-tight">
+            The ScriptScope Community
+          </h2>
+          <p className="text-xl md:text-2xl text-gray-700 mb-4 leading-relaxed max-w-2xl mx-auto">
+            Screenwriting insights from an Emmy-winning producer — and the writers who use them.
+          </p>
+          <p className="text-lg text-gray-500 mb-10 max-w-xl mx-auto">
+            Craft tips, real talk about the writing process, and a community of writers leveling up their scripts together.{' '}
+            <span className="font-semibold text-[#0a1628]">No signup required to read.</span>
+          </p>
+          <Link
+            href="/blog"
+            className="btn-gold px-10 py-5 rounded-lg font-semibold text-lg inline-block"
+          >
+            Join the Community →
+          </Link>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 gradient-midnight"></div>
