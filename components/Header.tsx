@@ -1,9 +1,45 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import UserDropdown from './UserDropdown';
+
+function BlogLink({ mobile, onClick }: { mobile?: boolean; onClick?: () => void }) {
+  const [hasNew, setHasNew] = useState(false);
+
+  useEffect(() => {
+    // Cache in sessionStorage so we only hit the API once per session
+    const cached = sessionStorage.getItem('blog_has_new');
+    if (cached !== null) {
+      setHasNew(cached === 'true');
+      return;
+    }
+    fetch('/api/blog/has-new')
+      .then((r) => r.json())
+      .then(({ hasNew: h }) => {
+        setHasNew(h);
+        sessionStorage.setItem('blog_has_new', String(h));
+      })
+      .catch(() => {});
+  }, []);
+
+  return (
+    <Link
+      href="/blog"
+      className={`relative inline-flex items-center gap-1 text-gray-700 hover:text-[#c9a962] transition-colors font-medium ${mobile ? '' : ''}`}
+      onClick={onClick}
+    >
+      Blog
+      {hasNew && (
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#c9a962] opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#c9a962]" />
+        </span>
+      )}
+    </Link>
+  );
+}
 
 export default function Header() {
   const { user, loading } = useAuth();
@@ -27,9 +63,7 @@ export default function Header() {
             <Link href="/pricing" className="text-gray-700 hover:text-[#c9a962] transition-colors font-medium">
               Pricing
             </Link>
-            <Link href="/blog" className="text-gray-700 hover:text-[#c9a962] transition-colors font-medium">
-              Blog
-            </Link>
+            <BlogLink />
             <Link href="/faq" className="text-gray-700 hover:text-[#c9a962] transition-colors font-medium">
               FAQ
             </Link>
@@ -79,9 +113,7 @@ export default function Header() {
               <Link href="/pricing" className="text-gray-700 hover:text-[#c9a962] transition-colors font-medium" onClick={() => setMobileMenuOpen(false)}>
                 Pricing
               </Link>
-              <Link href="/blog" className="text-gray-700 hover:text-[#c9a962] transition-colors font-medium" onClick={() => setMobileMenuOpen(false)}>
-                Blog
-              </Link>
+              <BlogLink mobile onClick={() => setMobileMenuOpen(false)} />
               <Link href="/faq" className="text-gray-700 hover:text-[#c9a962] transition-colors font-medium" onClick={() => setMobileMenuOpen(false)}>
                 FAQ
               </Link>

@@ -1,9 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { supabaseAdmin } from './supabase';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 interface AIPersona {
   id: string;
@@ -19,37 +17,109 @@ interface AIPersona {
 }
 
 const RANDOM_NAMES = [
-  'Mike', 'Lisa', 'John', 'Amy', 'Steve', 'Rachel', 'Tom', 'Nina', 'Brad', 'Kelly',
-  'Dan', 'Sophie', 'Mark', 'Jess', 'Ryan', 'Maya', 'Jake', 'Emma', 'Alex', 'Zoe',
+  'Mike', 'Lisa', 'John', 'Amy', 'Steve', 'Rachel', 'Tom', 'Nina',
+  'Brad', 'Kelly', 'Dan', 'Sophie', 'Mark', 'Jess', 'Ryan', 'Maya',
 ];
+
+// ── Curated tiny reactions — no API call, pick straight from these ────────────
+const TINY_BANK: Record<string, string[]> = {
+  agreeing:   ['so true', 'needed this', 'this is gold', 'yep been there', 'facts', 'saving this', 'THIS', 'finally', 'preach', '100%', 'and I oop'],
+  excited:    ['YESSS', 'omg yes', 'FINALLY', 'screaming', 'ok this is it', 'saying this louder for the back', 'THANK YOU'],
+  relatable:  ['literally me rn', 'me @ my script rn', 'lmaooo same', "this is fine (it's not fine)", 'ugh same', 'crying', 'currently living this'],
+  humorous:   ['my villain is literally just me on a bad day', "cool so i'm doing everything wrong. cool.", 'lmao welp', 'ok but why does this describe my entire draft'],
+  frustrated: ['ugh', 'ok but WHY is this so hard', 'i hate this craft', 'rip my second act', 'WHY IS THIS SO HARD', 'ugh i needed this a year ago', 'i want a refund on my draft'],
+  sarcastic:  ['wow who knew', 'groundbreaking stuff', 'thanks i am healed', 'oh wow so easy', 'noted, will do the good writing', 'revolutionary advice'],
+  curious:    ['wait what', 'explain more', 'never thought of that', 'ok but how', 'hmm interesting', 'wait is that why'],
+  negative:   ['meh', 'nah disagree', 'idk about this', 'not convinced', 'miss for me', 'hard pass', "disagree with basically all of this", "this doesn't apply to tv at all", 'cool story', 'whatever'],
+};
+
+type EmotionType = keyof typeof TINY_BANK;
+type TierType = 'tiny' | 'short' | 'long';
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// 60% tiny, 25% short, 15% long
+function pickTier(): TierType {
+  const r = Math.random();
+  if (r < 0.60) return 'tiny';
+  if (r < 0.85) return 'short';
+  return 'long';
+}
+
+// 10% of all comments are negative/dismissive
+function pickEmotion(forceNegative: boolean): EmotionType {
+  if (forceNegative) return 'negative';
+  return pickRandom(['agreeing', 'excited', 'relatable', 'humorous', 'frustrated', 'sarcastic', 'curious']);
+}
 
 function applyWritingStyle(text: string, style: AIPersona['writing_style']): string {
   let result = text;
-
   if (style.lowercase) {
     result = result.toLowerCase();
     result = result.replace(/\bi\b/g, () => (Math.random() > 0.3 ? 'i' : 'I'));
   }
-
   if (style.mistakes && Math.random() > 0.7) {
-    const typos: Record<string, string> = {
-      'the': 'teh',
-      'really': 'realy',
-      'definitely': 'definately',
-      'separate': 'seperate',
-    };
-    Object.entries(typos).forEach(([correct, typo]) => {
-      if (Math.random() > 0.8) {
-        result = result.replace(new RegExp(`\\b${correct}\\b`, 'i'), typo);
-      }
+    const typos: Record<string, string> = { the: 'teh', really: 'realy', definitely: 'definately' };
+    Object.entries(typos).forEach(([c, t]) => {
+      if (Math.random() > 0.8) result = result.replace(new RegExp(`\\b${c}\\b`, 'i'), t);
     });
   }
-
   return result;
 }
 
-// postDate: the blog post's publish date. Comments are staggered AFTER this date
-// so they appear to trickle in organically over 4 days.
+const EMOTION_INSTRUCTIONS: Record<EmotionType, string> = {
+  agreeing:   "Agree or validate something specific. Genuine, not sycophantic. Example: 'yep this is exactly where my pilot fell apart'.",
+  excited:    "React with genuine excitement or relief — like you've been waiting for this. CAPS ok. Example: 'FINALLY someone addresses act two pacing without the Save the Cat stuff'.",
+  relatable:  "Self-deprecating or relatable humor. Reference your own script situation. Example: 'me reading this while my pilot has been in final draft for 6 months lol'.",
+  humorous:   "Light humor about yourself or the craft. A joke. Example: 'my antagonist is literally just me on a bad day, this article confirmed it'.",
+  frustrated: "Express mild frustration — at yourself, at the craft, at learning this too late. Example: 'ugh I rewrote act two nine times last month and THIS is why'.",
+  sarcastic:  "Gently sarcastic or deadpan. Example: 'wow groundbreaking, just write better dialogue. noted.'",
+  curious:    "Ask a specific follow-up question or express curiosity about something in the article.",
+  negative:   "Be mildly dismissive, critical, or disagree. Could be 'disagree with most of this', or point out a flaw. Keep it civil — just unimpressed or unconvinced.",
+};
+
+const PERSONALITY_HINTS: Record<string, string> = {
+  casual:    'Lowercase fine, informal, short is natural.',
+  formal:    'Measured and thoughtful even when frustrated.',
+  technical: 'Craft-focused, may reference specific films or terms.',
+  balanced:  'Mix of personal anecdote and craft observation.',
+  friendly:  'Warm, relatable, sometimes asks questions.',
+  skeptical: 'Tends to push back or question assumptions.',
+};
+
+function buildApiPrompt(
+  personaName: string,
+  postTitle: string,
+  postContent: string,
+  tier: TierType,
+  emotion: EmotionType,
+  personalityHint: string,
+): string {
+  const lengthInstr = tier === 'short'
+    ? '1-2 sentences max. Direct and punchy.'
+    : '3-5 sentences. More detailed but still conversational.';
+
+  return `You are ${personaName}, leaving a comment on a screenwriting blog post.
+
+Post: "${postTitle}"
+
+Length: ${lengthInstr}
+Tone: ${EMOTION_INSTRUCTIONS[emotion]}
+Your personality: ${personalityHint}
+
+RULES — non-negotiable:
+- NEVER use: "great insights", "thanks for sharing", "well written", "love this", "fantastic", "valuable"
+- No AI-sounding phrases. Sound like a real person typing quickly.
+- Fragments and informal punctuation are fine.
+- Write ONLY the comment. No quotes around it, no prefix like "Comment:".
+
+Article excerpt:
+${postContent.substring(0, 500)}`;
+}
+
+// postDate: the post's publish date — comments stagger forward from here
 export async function generateCommentForPost(
   postId: string,
   postTitle: string,
@@ -63,70 +133,41 @@ export async function generateCommentForPost(
     .select('*')
     .eq('is_randomizer', false);
 
-  if (!personas || personas.length === 0) return;
+  if (!personas?.length) return;
 
-  // 2–4 personas comment per post
-  const numComments = Math.floor(Math.random() * 3) + 2;
-  const selectedPersonas = personas
-    .sort(() => Math.random() - 0.5)
-    .slice(0, numComments);
+  const numComments = Math.floor(Math.random() * 3) + 2; // 2–4
+  const selected = [...personas].sort(() => Math.random() - 0.5).slice(0, numComments);
 
-  const personalityPrompts: Record<string, string> = {
-    casual: `You're a casual working screenwriter who comments online. Keep it short (1–3 sentences). Lowercase is fine. Reference your own current script or a recent rewrite experience. Sound like a real person, not a fan.
-Tone examples: "been dealing with this exact issue on my pilot", "yeah this cost me a whole act on my last draft", "i keep making this mistake lol"`,
+  for (let i = 0; i < selected.length; i++) {
+    const persona = selected[i] as AIPersona;
+    const isNegative = Math.random() < 0.10;
+    const tier = pickTier();
+    const emotion = pickEmotion(isNegative);
+    const personalityHint = PERSONALITY_HINTS[persona.personality] ?? 'Conversational.';
 
-    formal: `You're an experienced screenwriter leaving a thoughtful, analytical comment. 2–4 sentences. Reference a specific point from the article. Occasionally add nuance or a counterpoint from your own experience.
-Tone examples: "The point about subtext tracking holds up, though I'd argue it breaks down in procedurals where dialogue has to carry exposition.", "This maps to what my showrunner told me after my first staffing job — took me two more years to actually apply it."`,
-
-    technical: `You're a craft-focused screenwriter. Reference specific structural elements, named screenplays, or industry terminology. Precise and detailed, 3–5 sentences.
-Tone examples: "The Blake Snyder framing here is fine but the McKee gap is the more useful lens for this problem.", "Checked my Chinatown notes after reading this — Towne does exactly what you're describing in act two."`,
-
-    balanced: `You're a working screenwriter mixing personal anecdote with craft observation. 2–4 sentences. Personal experience + a craft takeaway.
-Tone examples: "I'm on my third rewrite of a pilot and this hit home. The antagonist note especially — mine's been too reactive and I couldn't name why until now.", "My last feature had this exact problem in act two. Took a producer note to see it."`,
-
-    friendly: `You're encouraging and share a personal experience. 2–3 sentences. What did this change for you? Optionally ask a specific follow-up question.
-Tone examples: "Saved this. Working on my first feature and the opening scene has been killing me — tried the approach you describe and it clicked.", "The part about planting the theme early without announcing it — that's the thing I keep missing. How early is too early?"`,
-
-    skeptical: `You're fair but skeptical. Push back gently on one point, or name an exception from a real film. 2–4 sentences. Not dismissive — just honest.
-Tone examples: "Good points, though the 'avoid flashbacks entirely' advice is too absolute — Arrival and Memento would disagree.", "I'd push back a bit on the three-act framing here. Most TV doesn't work that way and it's starting to bleed into features too."`,
-  };
-
-  for (let i = 0; i < selectedPersonas.length; i++) {
-    const persona = selectedPersonas[i] as AIPersona;
-    const personalityPrompt = personalityPrompts[persona.personality] ?? personalityPrompts.balanced;
-
-    // Spread comments: 6h to 4 days AFTER the post's publish date
-    const minHours = 6 + i * 8; // stagger each persona slightly later
-    const maxHours = 96;
-    const delayHours = minHours + Math.random() * (maxHours - minHours);
+    // Stagger 6h–4 days from post date, each persona slightly later
+    const minH = 6 + i * 8;
+    const delayHours = minH + Math.random() * Math.max(96 - minH, 12);
     const commentDate = new Date(baseDate.getTime() + delayHours * 3_600_000);
 
-    const prompt = `You are ${persona.name}, a screenwriter leaving a comment on a blog post.
+    let commentText: string;
 
-Post title: "${postTitle}"
+    if (tier === 'tiny') {
+      commentText = pickRandom(TINY_BANK[emotion] ?? TINY_BANK.agreeing);
+    } else {
+      const model = tier === 'long' ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001';
+      const maxTokens = tier === 'long' ? 280 : 100;
+      const prompt = buildApiPrompt(persona.name, postTitle, postContent, tier, emotion, personalityHint);
 
-${personalityPrompt}
+      const msg = await anthropic.messages.create({
+        model,
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }],
+      });
+      commentText = msg.content[0].type === 'text' ? msg.content[0].text : 'so true';
+      commentText = commentText.replace(/^["']|["']$/g, '').trim();
+    }
 
-Hard rules:
-- NEVER say: "great insights", "thanks for sharing", "well written", "love this", "fantastic", "excellent point"
-- Reference something SPECIFIC from the article — a technique, a specific phrase used, a concrete example
-- Sound like you've actually worked on screenplays — mention your own script, a rewrite, a note you got, a film you studied
-- One consistent voice. Don't shift styles.
-- Length matches personality — some short, some longer
-
-Article excerpt:
-${postContent.substring(0, 700)}
-
-Write ONLY the comment text. No quotation marks around it. No "Comment:" prefix.`;
-
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 350,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    let commentText = message.content[0].type === 'text' ? message.content[0].text : '';
-    commentText = commentText.replace(/^["']|["']$/g, '').trim();
     commentText = applyWritingStyle(commentText, persona.writing_style);
 
     await supabaseAdmin.from('blog_comments').insert({
@@ -138,12 +179,12 @@ Write ONLY the comment text. No quotation marks around it. No "Comment:" prefix.
     });
   }
 
-  // 40% chance of a one-off randomizer comment
+  // 40% chance of randomizer comment
   if (Math.random() > 0.6) {
     await generateRandomizerComment(postId, postTitle, postContent, baseDate);
   }
 
-  console.log(`Generated ${numComments} AI comments for: ${postTitle}`);
+  console.log(`Generated ${numComments} comments for: ${postTitle}`);
 }
 
 async function generateRandomizerComment(
@@ -152,45 +193,35 @@ async function generateRandomizerComment(
   postContent: string,
   postDate: Date,
 ): Promise<void> {
-  const randomName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+  const name = pickRandom(RANDOM_NAMES);
+  const delay = (24 + Math.random() * 120) * 3_600_000;
+  const commentDate = new Date(postDate.getTime() + delay);
+  const isNegative = Math.random() < 0.10;
+  const tier = pickTier();
+  const emotion = pickEmotion(isNegative);
 
-  // Randomizers show up 1–6 days after post
-  const delayHours = 24 + Math.random() * 120;
-  const commentDate = new Date(postDate.getTime() + delayHours * 3_600_000);
+  let text: string;
 
-  const styles = [
-    'Write exactly 1 casual sentence. Quick gut reaction.',
-    'Write 2 short sentences. A specific personal experience related to the article.',
-    'Write 1 sentence asking a specific question about something in the article.',
-    'Write 2 sentences politely pushing back on one point.',
-  ];
-  const selectedStyle = styles[Math.floor(Math.random() * styles.length)];
+  if (tier === 'tiny') {
+    text = pickRandom(TINY_BANK[emotion] ?? TINY_BANK.agreeing);
+  } else {
+    const prompt = buildApiPrompt(name, postTitle, postContent, tier, emotion, 'Casual internet commenter, not a professional screenwriter.');
+    const msg = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 100,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    text = msg.content[0].type === 'text' ? msg.content[0].text : 'interesting';
+    text = text.replace(/^["']|["']$/g, '').trim();
+  }
 
-  const prompt = `You are ${randomName}, a casual visitor who found this screenwriting blog: "${postTitle}"
-
-${selectedStyle}
-
-Rules: No generic praise. Reference something specific from the article. Sound like a real person, not a fan.
-
-Article excerpt: ${postContent.substring(0, 350)}
-
-Write ONLY the comment. No quotes.`;
-
-  const message = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 150,
-    messages: [{ role: 'user', content: prompt }],
-  });
-
-  let commentText = message.content[0].type === 'text' ? message.content[0].text : '';
-  commentText = commentText.replace(/^["']|["']$/g, '').trim();
-  if (Math.random() > 0.5) commentText = commentText.toLowerCase();
+  if (Math.random() > 0.5) text = text.toLowerCase();
 
   await supabaseAdmin.from('blog_comments').insert({
     post_id: postId,
     persona_id: null,
-    author_name: randomName,
-    content: commentText,
+    author_name: name,
+    content: text,
     created_at: commentDate.toISOString(),
   });
 }
