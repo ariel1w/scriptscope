@@ -35,7 +35,7 @@ export default async function BlogPage() {
           <h1 className="text-4xl font-bold text-[#1E3A5F] mb-4">ScriptScope Community</h1>
           <p className="text-lg text-gray-600">
             Screenwriting insights from an{' '}
-            <span className="font-bold text-[#c9a962] text-xl">Emmy-winning producer</span>
+            <span className="font-bold text-[#0a1628] bg-[#c9a962] px-2 py-0.5 rounded">Emmy-winning producer</span>
             {' '}and the writers who use them.
           </p>
         </div>
