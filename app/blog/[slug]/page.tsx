@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   return {
-    title: `${post.title} | ScriptScope Blog`,
+    title: `${post.title} | ScriptScope Community`,
     description: post.meta_description || post.content.substring(0, 155),
     keywords: post.seo_keywords || [],
     openGraph: {
@@ -56,7 +56,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           href="/blog"
           className="text-[#1E3A5F] hover:underline mb-4 inline-block"
         >
-          ← Back to Blog
+          ← Back to Community
         </Link>
 
         <h1 className="text-4xl font-bold text-[#1E3A5F] mb-4">{post.title}</h1>

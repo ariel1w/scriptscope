@@ -30,7 +30,7 @@ function BlogLink({ mobile, onClick }: { mobile?: boolean; onClick?: () => void 
       className={`relative inline-flex items-center gap-1 text-gray-700 hover:text-[#c9a962] transition-colors font-medium ${mobile ? '' : ''}`}
       onClick={onClick}
     >
-      Blog
+      Community
       {hasNew && (
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#c9a962] opacity-75" />

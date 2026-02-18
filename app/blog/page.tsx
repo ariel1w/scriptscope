@@ -32,9 +32,9 @@ export default async function BlogPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-[#1E3A5F] mb-4">ScriptScope Blog</h1>
+          <h1 className="text-4xl font-bold text-[#1E3A5F] mb-4">ScriptScope Community</h1>
           <p className="text-lg text-gray-600">
-            Insights on screenwriting craft, industry trends, and what readers actually look for.
+            Screenwriting insights from an Emmy-winning producer and the writers who use them.
           </p>
         </div>
 
