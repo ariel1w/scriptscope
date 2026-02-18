@@ -1,13 +1,45 @@
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import Link from 'next/link';
+import BlogComments from '@/components/BlogComments';
+import type { Metadata } from 'next';
 
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
   const { data: post } = await supabaseAdmin
     .from('content_queue')
     .select('*')
     .eq('platform', 'blog')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
+    .eq('status', 'posted')
+    .single();
+
+  if (!post) {
+    return {
+      title: 'Post Not Found | ScriptScope',
+    };
+  }
+
+  return {
+    title: `${post.title} | ScriptScope Blog`,
+    description: post.meta_description || post.content.substring(0, 155),
+    keywords: post.seo_keywords || [],
+    openGraph: {
+      title: post.title,
+      description: post.meta_description || post.content.substring(0, 155),
+      url: `https://scriptscope.online/blog/${slug}`,
+      type: 'article',
+    },
+  };
+}
+
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const { data: post } = await supabaseAdmin
+    .from('content_queue')
+    .select('*')
+    .eq('platform', 'blog')
+    .eq('slug', slug)
     .eq('status', 'posted')
     .single();
 
@@ -36,29 +68,23 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         </div>
 
         <div className="prose prose-lg max-w-none">
-          {post.content.split('\n\n').map((paragraph: string, idx: number) => (
-            <p key={idx} className="mb-4 text-gray-700 leading-relaxed">
-              {paragraph}
-            </p>
-          ))}
+          {post.content.split('\n\n').map((paragraph: string, idx: number) => {
+            if (paragraph.startsWith('## ')) {
+              return (
+                <h2 key={idx} className="text-2xl font-bold text-[#1E3A5F] mt-8 mb-4">
+                  {paragraph.replace('## ', '')}
+                </h2>
+              );
+            }
+            return (
+              <p key={idx} className="mb-4 text-gray-700 leading-relaxed">
+                {paragraph}
+              </p>
+            );
+          })}
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <div className="bg-blue-50 rounded-lg p-6">
-            <h3 className="text-xl font-bold text-[#1E3A5F] mb-2">
-              Get Professional Script Coverage
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Want detailed feedback on your screenplay? Try ScriptScope for fast, comprehensive analysis.
-            </p>
-            <Link
-              href="/analyze"
-              className="bg-[#1E3A5F] text-white px-6 py-2 rounded-lg font-medium hover:bg-[#152d47] transition-colors inline-block"
-            >
-              Analyze Your Script
-            </Link>
-          </div>
-        </div>
+        <BlogComments postId={post.id} />
       </article>
     </div>
   );

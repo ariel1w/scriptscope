@@ -1,29 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { PADDLE_CREDITS, verifyPaddleWebhook } from '@/lib/paddle';
+import { verifyLemonSqueezyWebhook, LEMONSQUEEZY_CREDITS } from '@/lib/lemonsqueezy';
 import { sendPurchaseConfirmationEmail } from '@/lib/resend';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
-    const signature = request.headers.get('paddle-signature') || '';
+    const signature = request.headers.get('x-signature') || '';
 
     // Verify webhook signature
-    if (!verifyPaddleWebhook(signature, body)) {
+    if (!verifyLemonSqueezyWebhook(signature, body)) {
+      console.error('Invalid webhook signature');
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const event = JSON.parse(body);
 
-    // Handle different event types
-    if (event.event_type === 'transaction.completed') {
-      const { customer, items } = event.data;
-      const email = customer.email;
-      const priceId = items[0].price.id;
-      const credits = PADDLE_CREDITS[priceId] || 0;
+    // Handle order_created event (successful payment)
+    if (event.meta.event_name === 'order_created') {
+      const { attributes } = event.data;
+      const email = attributes.user_email;
+      const variantId = String(attributes.first_order_item.variant_id);
+      const amount = attributes.total / 100; // Convert cents to dollars
+
+      // Look up credits for this variant
+      const credits = LEMONSQUEEZY_CREDITS[variantId] || 0;
 
       if (credits > 0) {
-        // Add credits to user account
+        // Add or update credits in database
         const { data: existingCredit } = await supabaseAdmin
           .from('credits')
           .select('*')
@@ -31,7 +35,7 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (existingCredit) {
-          // Update existing record
+          // Update existing credits
           await supabaseAdmin
             .from('credits')
             .update({
@@ -40,19 +44,16 @@ export async function POST(request: NextRequest) {
             })
             .eq('email', email);
         } else {
-          // Create new record
-          await supabaseAdmin
-            .from('credits')
-            .insert({
-              email,
-              credits_remaining: credits,
-              trial_used: false,
-            });
+          // Create new credit record
+          await supabaseAdmin.from('credits').insert({
+            email,
+            credits_remaining: credits,
+            trial_used: false,
+          });
         }
 
         // Update daily stats
         const today = new Date().toISOString().split('T')[0];
-        const amount = items[0].totals.total / 100; // Convert cents to dollars
 
         const { data: existingStats } = await supabaseAdmin
           .from('daily_stats')
@@ -69,19 +70,19 @@ export async function POST(request: NextRequest) {
             })
             .eq('date', today);
         } else {
-          await supabaseAdmin
-            .from('daily_stats')
-            .insert({
-              date: today,
-              revenue: amount,
-              signups: 1,
-              scripts_analyzed: 0,
-              refunds: 0,
-            });
+          await supabaseAdmin.from('daily_stats').insert({
+            date: today,
+            revenue: amount,
+            signups: 1,
+            scripts_analyzed: 0,
+            refunds: 0,
+          });
         }
 
         // Send confirmation email
         await sendPurchaseConfirmationEmail(email, credits);
+
+        console.log(`Successfully processed payment for ${email}: ${credits} credits`);
       }
     }
 

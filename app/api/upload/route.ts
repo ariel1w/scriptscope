@@ -64,15 +64,8 @@ export async function POST(request: NextRequest) {
     const MAX_PAGES = 150;
 
     if (text.length > MAX_CHARS) {
-      console.log(`[Upload] Script too long (${text.length} chars), truncating to ${MAX_CHARS}`);
       text = text.substring(0, MAX_CHARS) + '\n\n[Note: Script truncated at ~110 pages for analysis.]';
     }
-
-    if (pageCount > MAX_PAGES) {
-      console.log(`[Upload] Script has ${pageCount} pages, will analyze first ${MAX_PAGES} pages`);
-    }
-
-    console.log(`[Upload] Script: ${title}, Pages: ${pageCount}, Characters: ${text.length}`);
 
     // Create script record
     const { data: script, error } = await supabaseAdmin

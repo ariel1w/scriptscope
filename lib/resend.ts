@@ -195,3 +195,54 @@ export async function sendDailyDigestEmail(stats: {
     console.error('Failed to send daily digest email:', error);
   }
 }
+
+export async function sendContactEmail(name: string, email: string, message: string) {
+  try {
+    await getResend().emails.send({
+      from: fromEmail,
+      to: ownerEmail,
+      replyTo: email,
+      subject: `ScriptScope Contact Form: ${name}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #0a1628 0%, #1a3a5f 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
+            .info { background: #f3f4f6; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+            .message { background: #f9fafb; padding: 20px; border-left: 4px solid #c9a962; border-radius: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0; font-size: 20px;">📧 Contact Form Submission</h1>
+            </div>
+            <div class="content">
+              <div class="info">
+                <p style="margin: 0 0 10px 0;"><strong>From:</strong> ${name}</p>
+                <p style="margin: 0;"><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+              </div>
+
+              <h2 style="color: #0a1628; margin-top: 20px;">Message:</h2>
+              <div class="message">
+                <p style="margin: 0; white-space: pre-wrap;">${message}</p>
+              </div>
+
+              <p style="margin-top: 30px; font-size: 14px; color: #666;">
+                Reply directly to this email to respond to ${name}.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+  } catch (error) {
+    console.error('Failed to send contact email:', error);
+    throw error;
+  }
+}

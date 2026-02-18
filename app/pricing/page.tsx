@@ -133,10 +133,10 @@ export default function PricingPage() {
             </div>
             <div className="text-center mt-8 pt-8 border-t border-gray-100">
               <p className="text-sm text-gray-600">
-                Questions? Contact{' '}
-                <a href="mailto:support@scriptscope.com" className="text-[#c9a962] hover:text-[#b89850] font-semibold">
-                  support@scriptscope.com
-                </a>
+                Questions?{' '}
+                <Link href="/contact" className="text-[#c9a962] hover:text-[#b89850] font-semibold">
+                  Contact us
+                </Link>
               </p>
             </div>
           </div>

@@ -6,19 +6,15 @@ import { sendReportReadyEmail, sendAnalysisFailedEmail } from '@/lib/resend';
 
 export async function POST(request: NextRequest) {
   try {
-    const { scriptId, email, testKey, promoDiscount = 0 } = await request.json();
+    const { scriptId, email, promoDiscount = 0 } = await request.json();
 
     if (!scriptId || !email) {
       return NextResponse.json({ error: 'Missing scriptId or email' }, { status: 400 });
     }
 
-    // Check if test key is valid and skip credit check
-    const isTestMode = testKey && testKey === process.env.TEST_SECRET_KEY;
-    // Check if promo gives 100% discount
     const isFreeWithPromo = promoDiscount === 100;
 
-    // Deduct credit (skip in test mode or 100% promo)
-    if (!isTestMode && !isFreeWithPromo) {
+    if (!isFreeWithPromo) {
       const creditResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/credits`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -53,12 +49,8 @@ export async function POST(request: NextRequest) {
 
     // Run analysis
     try {
-      console.log('[Analyze] Starting AI analysis for script:', scriptId);
       const analysis = await analyzeScript(script.raw_text, SCRIPT_ANALYSIS_PROMPT);
-      console.log('[Analyze] AI analysis complete');
 
-      // Save analysis
-      console.log('[Analyze] Saving analysis to database...');
       const { error: updateError } = await supabaseAdmin
         .from('scripts')
         .update({
@@ -73,11 +65,7 @@ export async function POST(request: NextRequest) {
         throw new Error('Failed to save analysis');
       }
 
-      console.log('[Analyze] Analysis saved successfully');
-
-      // Mark first discount as used if FIRST10 code was applied
       if (promoDiscount === 74 && script.user_id) {
-        console.log('[Analyze] Marking first discount as used for user:', script.user_id);
         await supabaseAdmin
           .from('users')
           .update({ first_discount_used: true })
@@ -122,10 +110,6 @@ export async function POST(request: NextRequest) {
       });
     } catch (analysisError) {
       console.error('[Analyze] Analysis error:', analysisError);
-      console.error('[Analyze] Error details:', {
-        message: (analysisError as Error).message,
-        stack: (analysisError as Error).stack,
-      });
 
       // Mark as failed
       await supabaseAdmin
@@ -136,9 +120,7 @@ export async function POST(request: NextRequest) {
         })
         .eq('id', scriptId);
 
-      // Refund credit (skip in test mode or 100% promo)
-      if (!isTestMode && !isFreeWithPromo) {
-        console.log('[Analyze] Refunding credit to:', email);
+      if (!isFreeWithPromo) {
         await supabaseAdmin.rpc('increment_credits', {
           user_email: email,
           amount: 1,
@@ -155,10 +137,6 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('[Analyze] Top-level error:', error);
-    console.error('[Analyze] Error details:', {
-      message: (error as Error).message,
-      stack: (error as Error).stack,
-    });
     return NextResponse.json({
       error: 'Server error',
       details: (error as Error).message

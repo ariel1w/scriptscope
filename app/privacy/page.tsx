@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -15,7 +17,10 @@ export default function PrivacyPage() {
           <p>
             The data controller responsible for your data is ScriptScope, operated from Israel.
             <br />
-            Contact: privacy@scriptscope.com
+            Contact:{' '}
+            <Link href="/contact" className="text-[#1E3A5F] underline hover:text-[#c9a962]">
+              Contact us
+            </Link>
           </p>
 
           <h2 className="text-2xl font-bold text-[#1E3A5F] mt-8 mb-4">2. Information We Collect</h2>
@@ -23,7 +28,7 @@ export default function PrivacyPage() {
           <p><strong>Personal Data:</strong></p>
           <ul className="list-disc pl-6 space-y-1">
             <li>Email address (required for account creation and delivery of analysis)</li>
-            <li>Payment information (processed by Paddle, our payment provider — we never store your payment card details)</li>
+            <li>Payment information (processed by Lemon Squeezy, our payment provider — we never store your payment card details)</li>
           </ul>
 
           <p><strong>Uploaded Content:</strong></p>
@@ -135,7 +140,11 @@ export default function PrivacyPage() {
           </ul>
 
           <p>
-            To exercise these rights, contact: privacy@scriptscope.com
+            To exercise these rights,{' '}
+            <Link href="/contact" className="text-[#1E3A5F] underline hover:text-[#c9a962]">
+              contact us
+            </Link>
+            .
             <br />
             We will respond within 30 days (or sooner where required by law).
           </p>
@@ -164,9 +173,9 @@ export default function PrivacyPage() {
             </thead>
             <tbody>
               <tr>
-                <td className="border border-gray-300 px-4 py-2">Paddle</td>
+                <td className="border border-gray-300 px-4 py-2">Lemon Squeezy</td>
                 <td className="border border-gray-300 px-4 py-2">Payment processing</td>
-                <td className="border border-gray-300 px-4 py-2">UK/US</td>
+                <td className="border border-gray-300 px-4 py-2">US</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 px-4 py-2">Vercel</td>
@@ -212,7 +221,11 @@ export default function PrivacyPage() {
           <h2 className="text-2xl font-bold text-[#1E3A5F] mt-8 mb-4">11. Children's Privacy</h2>
 
           <p>
-            Our service is not intended for users under 18. We do not knowingly collect data from children. If you believe a child has provided us data, contact us immediately at privacy@scriptscope.com.
+            Our service is not intended for users under 18. We do not knowingly collect data from children. If you believe a child has provided us data,{' '}
+            <Link href="/contact" className="text-[#1E3A5F] underline hover:text-[#c9a962]">
+              contact us immediately
+            </Link>
+            .
           </p>
 
           <h2 className="text-2xl font-bold text-[#1E3A5F] mt-8 mb-4">12. Do Not Sell My Information (CCPA)</h2>
@@ -230,9 +243,10 @@ export default function PrivacyPage() {
           <h2 className="text-2xl font-bold text-[#1E3A5F] mt-8 mb-4">14. Contact Us</h2>
 
           <p>
-            For privacy-related questions or to exercise your rights:
-            <br />
-            Email: privacy@scriptscope.com
+            For privacy-related questions or to exercise your rights:{' '}
+            <Link href="/contact" className="text-[#1E3A5F] underline hover:text-[#c9a962]">
+              Contact us
+            </Link>
             <br />
             Response time: Within 30 days
           </p>

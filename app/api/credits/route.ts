@@ -5,26 +5,17 @@ export async function POST(request: NextRequest) {
   try {
     const { email, action } = await request.json();
 
-    console.log('[Credits API] Request:', { email, action });
-
     if (!email) {
-      console.error('[Credits API] Missing email');
       return NextResponse.json({ error: 'Email required' }, { status: 400 });
     }
 
-    // Get or create credit record
-    console.log('[Credits API] Querying credits table for:', email);
     let { data: credit, error } = await supabaseAdmin
       .from('credits')
       .select('*')
       .eq('email', email)
       .single();
 
-    console.log('[Credits API] Query result:', { credit, error });
-
     if (error && error.code === 'PGRST116') {
-      // Record doesn't exist, create it
-      console.log('[Credits API] Creating new credit record for:', email);
       const { data: newCredit, error: insertError } = await supabaseAdmin
         .from('credits')
         .insert({
@@ -44,7 +35,6 @@ export async function POST(request: NextRequest) {
       }
 
       credit = newCredit;
-      console.log('[Credits API] Created new credit:', credit);
     } else if (error) {
       console.error('[Credits API] Database error:', error);
       return NextResponse.json({

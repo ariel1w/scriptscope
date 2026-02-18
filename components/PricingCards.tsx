@@ -10,7 +10,7 @@ interface PricingCardProps {
   price: string;
   credits: number;
   features: string[];
-  priceId: string;
+  variantId: string;
   popular?: boolean;
 }
 
@@ -48,7 +48,7 @@ export default function PricingCards() {
       price: '$39',
       credits: 1,
       features: ['1 Complete Coverage Report', 'Professional PDF Delivery', 'Emmy-Quality Methodology', '24-Hour Turnaround'],
-      priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_SINGLE || 'pri_single',
+      variantId: '836028',
     },
     {
       title: 'Professional',
@@ -61,7 +61,7 @@ export default function PricingCards() {
         'Professional PDF Delivery',
         'Emmy-Quality Methodology',
       ],
-      priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_THREE || 'pri_three',
+      variantId: '836037',
       popular: true,
     },
     {
@@ -75,11 +75,11 @@ export default function PricingCards() {
         'Bulk Delivery Options',
         'Emmy-Quality Methodology',
       ],
-      priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_TEN || 'pri_ten',
+      variantId: '836040',
     },
   ];
 
-  const handlePurchase = async (priceId: string) => {
+  const handlePurchase = async (variantId: string) => {
     try {
       const email = prompt('Enter your email address:');
       if (!email) return;
@@ -87,7 +87,7 @@ export default function PricingCards() {
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, email }),
+        body: JSON.stringify({ variantId, email }),
       });
 
       const data = await response.json();
@@ -152,7 +152,7 @@ export default function PricingCards() {
           )}
 
           <button
-            onClick={() => handlePurchase(plan.priceId)}
+            onClick={() => handlePurchase(plan.variantId)}
             className={`w-full py-4 rounded-lg font-semibold transition-all duration-300 ${
               plan.popular
                 ? 'btn-gold'

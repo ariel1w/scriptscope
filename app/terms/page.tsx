@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -100,7 +102,12 @@ export default function TermsPage() {
             <li>Unused credits may be refunded within 30 days of purchase</li>
             <li>Credits that have been used for analysis are non-refundable</li>
             <li>If our service fails to deliver an analysis due to technical error, you will receive a full refund or credit restoration</li>
-            <li>Contact support@scriptscope.com for refund requests</li>
+            <li>
+              <Link href="/contact" className="text-[#1E3A5F] underline hover:text-[#c9a962]">
+                Contact us
+              </Link>
+              {' '}for refund requests
+            </li>
           </ul>
 
           <h2 className="text-2xl font-bold text-[#1E3A5F] mt-8 mb-4">9. Acceptable Use</h2>
@@ -134,7 +141,12 @@ export default function TermsPage() {
           </p>
 
           <h2 className="text-2xl font-bold text-[#1E3A5F] mt-8 mb-4">14. Contact</h2>
-          <p>Questions about these Terms: legal@scriptscope.com</p>
+          <p>
+            Questions about these Terms?{' '}
+            <Link href="/contact" className="text-[#1E3A5F] underline hover:text-[#c9a962]">
+              Contact us
+            </Link>
+          </p>
         </div>
       </div>
     </div>

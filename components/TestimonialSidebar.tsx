@@ -44,26 +44,9 @@ export default function TestimonialSidebar() {
     );
   }
 
-  // Show CTA when no approved reviews
+  // Don't show anything when no approved reviews
   if (reviews.length === 0) {
-    return (
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#0a1628] to-[#1a2f4a] rounded-xl shadow-premium-lg p-8 text-white border border-[#c9a962]/20">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#c9a962]/10 rounded-full blur-3xl"></div>
-        <div className="relative">
-          <div className="text-5xl mb-4">⭐</div>
-          <h3 className="text-xl font-serif font-bold mb-3">Industry Professional?</h3>
-          <p className="text-sm mb-6 opacity-90 leading-relaxed">
-            Share your experience and receive complimentary script analysis
-          </p>
-          <Link
-            href="/review"
-            className="block w-full btn-gold text-center py-3 rounded-lg font-semibold"
-          >
-            Claim Free Analysis →
-          </Link>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // Show approved reviews
@@ -93,14 +76,6 @@ export default function TestimonialSidebar() {
           </div>
         </div>
       ))}
-      <div className="text-center pt-4">
-        <Link
-          href="/review"
-          className="text-sm text-[#c9a962] hover:text-[#b89850] font-semibold transition-colors"
-        >
-          Share Your Experience →
-        </Link>
-      </div>
     </div>
   );
 }

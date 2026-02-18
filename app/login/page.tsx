@@ -80,10 +80,10 @@ export default function LoginPage() {
             </Link>
           </div>
           <p className="text-sm text-gray-400">
-            Questions? Contact{' '}
-            <a href="mailto:support@scriptscope.com" className="text-[#c9a962] hover:text-[#b89552]">
-              support@scriptscope.com
-            </a>
+            Questions?{' '}
+            <Link href="/contact" className="text-[#c9a962] hover:text-[#b89552]">
+              Contact us
+            </Link>
           </p>
         </div>
       </div>

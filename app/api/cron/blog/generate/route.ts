@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendDailyDigest } from '@/lib/daily-digest';
+import { generateBlogPost } from '@/lib/blog-generator';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,11 +10,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await sendDailyDigest();
+    await generateBlogPost();
 
-    return NextResponse.json({ success: true, message: 'Daily digest sent' });
+    return NextResponse.json({ success: true, message: 'Blog post generated' });
   } catch (error) {
-    console.error('Daily digest error:', error);
-    return NextResponse.json({ error: 'Failed to send daily digest' }, { status: 500 });
+    console.error('Blog generation error:', error);
+    return NextResponse.json({ error: 'Failed to generate blog post' }, { status: 500 });
   }
 }

@@ -73,43 +73,35 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-4 gap-8">
-            {/* Features - 3 columns */}
-            <div className="lg:col-span-3 grid md:grid-cols-3 gap-6">
-              <div className="bg-white p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-gray-100">
-                <div className="text-4xl mb-4">📋</div>
-                <h3 className="text-2xl font-serif font-semibold text-[#0a1628] mb-3">
-                  Comprehensive Analysis
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Logline, synopsis, character architecture, structure assessment, and commercial viability — everything a professional needs.
-                </p>
-              </div>
-
-              <div className="bg-white p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-gray-100">
-                <div className="text-4xl mb-4">⚡</div>
-                <h3 className="text-2xl font-serif font-semibold text-[#0a1628] mb-3">
-                  Lightning Fast
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Receive your Emmy-quality analysis in 3-5 minutes. No compromise on depth, no waiting for weeks.
-                </p>
-              </div>
-
-              <div className="bg-white p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-gray-100">
-                <div className="text-4xl mb-4">🔒</div>
-                <h3 className="text-2xl font-serif font-semibold text-[#0a1628] mb-3">
-                  Absolute Security
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Military-grade encryption. Automatically deleted within 24 hours. Never shared, never sold, never compromised.
-                </p>
-              </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="bg-white p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-gray-100">
+              <div className="text-4xl mb-4">📋</div>
+              <h3 className="text-2xl font-serif font-semibold text-[#0a1628] mb-3">
+                Comprehensive Analysis
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Logline, synopsis, character architecture, structure assessment, and commercial viability — everything a professional needs.
+              </p>
             </div>
 
-            {/* Testimonial Sidebar */}
-            <div className="lg:col-span-1">
-              <TestimonialSidebar />
+            <div className="bg-white p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-gray-100">
+              <div className="text-4xl mb-4">⚡</div>
+              <h3 className="text-2xl font-serif font-semibold text-[#0a1628] mb-3">
+                Lightning Fast
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Receive your Emmy-quality analysis in 3-5 minutes. No compromise on depth, no waiting for weeks.
+              </p>
+            </div>
+
+            <div className="bg-white p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-gray-100">
+              <div className="text-4xl mb-4">🔒</div>
+              <h3 className="text-2xl font-serif font-semibold text-[#0a1628] mb-3">
+                Absolute Security
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Military-grade encryption. Automatically deleted within 24 hours. Never shared, never sold, never compromised.
+              </p>
             </div>
           </div>
         </div>

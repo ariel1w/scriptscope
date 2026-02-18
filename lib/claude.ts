@@ -11,9 +11,6 @@ export const anthropic = new Anthropic({
 
 export async function analyzeScript(scriptText: string, analysisPrompt: string) {
   try {
-    console.log('[AI] Starting analysis...');
-    console.log('[AI] Script length:', scriptText.length, 'characters');
-    console.log('[AI] Prompt length:', analysisPrompt.length, 'characters');
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
@@ -26,13 +23,11 @@ export async function analyzeScript(scriptText: string, analysisPrompt: string) 
       ],
     });
 
-    console.log('[AI] Response received. Usage:', JSON.stringify(message.usage));
 
     const content = message.content[0];
     if (content.type === 'text') {
       const text = content.text;
 
-      console.log('[AI] Response length:', text.length, 'characters');
 
       // Try to extract JSON from the response
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -42,7 +37,6 @@ export async function analyzeScript(scriptText: string, analysisPrompt: string) 
         throw new Error('No JSON found in AI response');
       }
 
-      console.log('[AI] Extracted JSON length:', jsonMatch[0].length, 'characters');
 
       // Use robust JSON parser with error recovery
       try {
@@ -53,14 +47,12 @@ export async function analyzeScript(scriptText: string, analysisPrompt: string) 
           console.warn('[AI] Parsed JSON is missing required fields, but continuing anyway...');
         }
 
-        console.log('[AI] Successfully parsed JSON with fields:', Object.keys(parsed).join(', '));
         return parsed;
       } catch (parseError) {
         console.error('[AI] JSON parsing failed completely');
         console.error('[AI] Parse error:', (parseError as Error).message);
 
         // Try to return a minimal valid object to avoid complete failure
-        console.log('[AI] Attempting to create minimal valid response...');
         return createMinimalValidResponse(text);
       }
     }
@@ -76,7 +68,6 @@ export async function analyzeScript(scriptText: string, analysisPrompt: string) 
  * Creates a minimal valid response when JSON parsing completely fails
  */
 function createMinimalValidResponse(rawText: string): any {
-  console.log('[AI] Creating minimal fallback response');
 
   return {
     summary: {

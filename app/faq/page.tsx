@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function FAQPage() {
   const faqs = [
     {
@@ -75,12 +77,12 @@ export default function FAQPage() {
 
         <div className="mt-12 text-center">
           <p className="text-gray-600 mb-4">Still have questions?</p>
-          <a
-            href="mailto:support@scriptscope.com"
+          <Link
+            href="/contact"
             className="text-[#1E3A5F] underline hover:text-[#152d47]"
           >
-            Contact support@scriptscope.com
-          </a>
+            Contact us
+          </Link>
         </div>
       </div>
     </div>

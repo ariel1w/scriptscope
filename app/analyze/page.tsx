@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import UploadZone from '@/components/UploadZone';
-import ProgressBar from '@/components/ProgressBar';
-import Results from '@/components/Results';
 
 type Step = 'upload' | 'email' | 'promo' | 'uploading' | 'success' | 'error';
 
@@ -17,8 +15,6 @@ export default function AnalyzePage() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [scriptId, setScriptId] = useState('');
-  const [analysis, setAnalysis] = useState(null);
-  const [testKey, setTestKey] = useState<string | null>(null);
   const [showPromoInput, setShowPromoInput] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [promoDiscount, setPromoDiscount] = useState(0);
@@ -68,8 +64,6 @@ export default function AnalyzePage() {
     checkFirstTimeDiscount();
   }, [user]);
 
-  // Test mode support removed to fix build - re-add with Suspense if needed
-
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
     setStep('email');
@@ -111,7 +105,7 @@ export default function AnalyzePage() {
 
     try {
       setStep('uploading');
-      const isFree = testKey || promoDiscount === 100;
+      const isFree = promoDiscount === 100;
 
       // Check credits if not free
       if (!isFree) {
@@ -160,10 +154,9 @@ export default function AnalyzePage() {
         body: JSON.stringify({
           scriptId: uploadData.scriptId,
           email,
-          testKey: testKey || undefined,
           promoDiscount: promoDiscount || 0
         }),
-      }).catch(err => console.error('Analysis trigger failed:', err));
+      });
 
       // Show success immediately
       setStep('success');

@@ -39,14 +39,12 @@ export function parseJSON(text: string): any {
   try {
     return JSON.parse(text);
   } catch (e1) {
-    console.log('[JSON] Direct parse failed, attempting repair...');
 
     // Strategy 2: Try with repair
     try {
       const repaired = repairJSON(text);
       return JSON.parse(repaired);
     } catch (e2) {
-      console.log('[JSON] Repair failed, trying to extract valid portion...');
 
       // Strategy 3: Try to find the longest valid JSON substring
       try {

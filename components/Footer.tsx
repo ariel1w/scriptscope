@@ -27,11 +27,6 @@ export default function Footer() {
                   Pricing
                 </Link>
               </li>
-              <li>
-                <Link href="/review" className="hover:text-[#c9a962] transition-colors">
-                  Leave Review
-                </Link>
-              </li>
             </ul>
           </div>
           <div>
@@ -39,12 +34,17 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link href="/blog" className="hover:text-[#c9a962] transition-colors">
-                  Insights
+                  Blog
                 </Link>
               </li>
               <li>
                 <Link href="/faq" className="hover:text-[#c9a962] transition-colors">
                   FAQ
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-[#c9a962] transition-colors">
+                  Contact
                 </Link>
               </li>
               <li>

@@ -1,17 +1,12 @@
 export async function extractTextFromPDF(buffer: Buffer): Promise<{ text: string; pageCount: number }> {
   try {
-    console.log('[PDF Extract] Starting PDF extraction...');
 
     // Use eval require to bypass module resolution issues with Turbopack
     // pdf-parse 1.1.1 exports a function directly
     const pdfParse = eval('require')('pdf-parse');
 
-    console.log('[PDF Extract] Calling pdf-parse...');
     const data = await pdfParse(buffer);
 
-    console.log('[PDF Extract] Extraction complete!');
-    console.log('[PDF Extract] Pages:', data.numpages);
-    console.log('[PDF Extract] Text length:', data.text.length);
 
     return {
       text: data.text,
