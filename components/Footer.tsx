@@ -10,8 +10,8 @@ export default function Footer() {
               Script<span className="text-[#c9a962]">Scope</span>
             </Link>
             <p className="text-gray-400 leading-relaxed max-w-md">
-              Premium screenplay analysis trusted by industry professionals.
-              Emmy-winning methodology delivered with uncompromising precision.
+              AI-powered screenplay analysis built on Emmy-winning methodology.
+              Where technology meets real industry expertise.
             </p>
           </div>
           <div>

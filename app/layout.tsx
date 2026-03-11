@@ -7,6 +7,7 @@ import CookieBanner from "@/components/CookieBanner";
 import { AuthProvider } from "@/lib/auth-context";
 import StatusButton from "@/components/StatusButton";
 import PageViewTracker from "@/components/PageViewTracker";
+import BetaBanner from "@/components/BetaBanner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${playfair.variable} font-sans antialiased flex flex-col min-h-screen bg-white`}>
         <AuthProvider>
           <PageViewTracker />
+          <BetaBanner />
           <Header />
           <main className="flex-1">
             {children}

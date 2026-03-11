@@ -1,65 +1,46 @@
-import crypto from 'crypto';
+const LS_BASE = 'https://api.lemonsqueezy.com';
 
-export interface LemonSqueezyCheckoutConfig {
-  variantId: string;
-  email?: string;
-  successUrl: string;
-  customData?: Record<string, any>;
-}
-
-export interface LemonSqueezyWebhookEvent {
-  meta: {
-    event_name: string;
-    custom_data?: Record<string, any>;
-  };
-  data: {
-    id: string;
-    type: string;
-    attributes: {
-      status: string;
-      user_email: string;
-      first_order_item: {
-        variant_id: number;
-        price: number;
-      };
-      total: number;
-    };
-  };
-}
-
-// Product variant IDs from Lemon Squeezy
-export const LEMONSQUEEZY_VARIANTS = {
-  BASIC: '836028',
-  PROFESSIONAL: '836037',
-  BUNDLE: '836040',
+export const LS_VARIANTS: Record<string, { variantId: number; credits: number; name: string; isVip?: boolean }> = {
+  single:      { variantId: 1343976, credits: 1,  name: 'ScriptScope Basic Analysis' },
+  three_pack:  { variantId: 1343978, credits: 3,  name: 'ScriptScope 3-Pack' },
+  ten_pack:    { variantId: 1343980, credits: 10, name: 'ScriptScope 10-Pack' },
+  vip:         { variantId: 0,       credits: 1,  name: 'ScriptScope VIP Session', isVip: true },
 };
 
-// Credit mapping for each product
-export const LEMONSQUEEZY_CREDITS: Record<string, number> = {
-  [LEMONSQUEEZY_VARIANTS.BASIC]: 1,
-  [LEMONSQUEEZY_VARIANTS.PROFESSIONAL]: 3,
-  [LEMONSQUEEZY_VARIANTS.BUNDLE]: 10,
-};
+export async function createCheckoutUrl(variantId: number, email: string, redirectUrl?: string, scriptId?: string): Promise<string> {
+  const apiKey = process.env.LEMONSQUEEZY_API_KEY;
+  const storeId = process.env.LEMONSQUEEZY_STORE_ID;
+  if (!apiKey || !storeId) throw new Error('Lemon Squeezy credentials not configured');
 
-// Verify Lemon Squeezy webhook signature
-export function verifyLemonSqueezyWebhook(signature: string, body: string): boolean {
-  const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
-  if (!secret) {
-    console.error('LEMONSQUEEZY_WEBHOOK_SECRET not configured');
-    return false;
-  }
+  const attributes: Record<string, unknown> = {
+    checkout_data: {
+      email,
+      ...(scriptId ? { custom: { script_id: scriptId } } : {}),
+    },
+  };
+  attributes.checkout_options = { discount: true };
+  if (redirectUrl) attributes.product_options = { redirect_url: redirectUrl };
 
-  try {
-    const hmac = crypto.createHmac('sha256', secret);
-    hmac.update(body);
-    const digest = hmac.digest('hex');
+  const res = await fetch(`${LS_BASE}/v1/checkouts`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/vnd.api+json',
+      Accept: 'application/vnd.api+json',
+    },
+    body: JSON.stringify({
+      data: {
+        type: 'checkouts',
+        attributes,
+        relationships: {
+          store: { data: { type: 'stores', id: String(storeId) } },
+          variant: { data: { type: 'variants', id: String(variantId) } },
+        },
+      },
+    }),
+  });
 
-    return crypto.timingSafeEqual(
-      Buffer.from(signature),
-      Buffer.from(digest)
-    );
-  } catch (error) {
-    console.error('Webhook verification error:', error);
-    return false;
-  }
+  const data = await res.json();
+  if (!res.ok) throw new Error(`LS checkout failed: ${JSON.stringify(data)}`);
+  return data.data.attributes.url;
 }

@@ -60,6 +60,7 @@ Requirements:
 - SEO-optimized title (include the main keyword)
 - Meta description (150 chars max, compelling)
 - Natural, human tone - NO AI phrases like "let's dive in", "it's important to note", "in conclusion", "delve into", "landscape of", "realm of"
+- NEVER use em dashes (—) or en dashes (–). Use commas, periods, or separate sentences instead.
 - Vary your writing style - sometimes start with a question, sometimes with a bold statement, sometimes with a story
 - Use short paragraphs (2-4 sentences max)
 - Include practical examples from real screenplays where possible
@@ -91,6 +92,15 @@ Format your response as JSON:
   }
 
   const article = JSON.parse(jsonMatch[0]);
+
+  // Strip any em/en dashes the model produced despite instructions
+  function replaceDashes(s: string): string {
+    if (!s) return s;
+    return s.replace(/\n *[—–] */g, '\n- ').replace(/ *[—–] */g, ', ');
+  }
+  article.title = replaceDashes(article.title);
+  article.content = replaceDashes(article.content);
+  article.meta_description = replaceDashes(article.meta_description);
   const slug = generateSlug(article.title);
   const wordCount = article.content.split(/\s+/).length;
 

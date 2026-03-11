@@ -1,40 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { extractTextFromPDF, extractTextFromTXT, getScriptTitle } from '@/lib/extract';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const email = formData.get('email') as string;
+    const userId = formData.get('userId') as string;
 
-    if (!file || !email) {
-      return NextResponse.json({ error: 'Missing file or email' }, { status: 400 });
+    if (!file || !email || !userId) {
+      return NextResponse.json({ error: 'Missing file, email, or userId' }, { status: 400 });
     }
-
-    // Get user session
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-        },
-      }
-    );
-
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const userId = session.user.id;
 
     // Convert file to buffer
     const bytes = await file.arrayBuffer();

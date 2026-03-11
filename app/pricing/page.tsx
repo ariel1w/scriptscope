@@ -10,18 +10,18 @@ export default function PricingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#c9a962]/30 bg-[#c9a962]/5 mb-6">
-              <span className="text-[#c9a962] text-sm font-semibold tracking-wide">PREMIUM COVERAGE</span>
+              <span className="text-[#c9a962] text-sm font-semibold tracking-wide">AI-POWERED WITH A HUMAN TOUCH</span>
             </div>
             <h1 className="text-5xl md:text-6xl font-serif font-bold text-[#0a1628] mb-6">
-              Investment in Excellence
+              Choose Your Coverage
             </h1>
             <p className="text-xl text-gray-600 mb-4">
-              Emmy-quality analysis at transparent, professional rates
+              From AI-powered coverage to a private session with our Emmy-winning founder
             </p>
             <div className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#c9a962]/10 to-[#d4b876]/10 border border-[#c9a962]/20">
-              <span className="text-2xl">🎁</span>
+              <span className="text-xl">✨</span>
               <p className="text-[#0a1628] font-semibold">
-                Try your first Basic analysis for just $10 — use code <span className="font-mono bg-[#c9a962]/20 px-2 py-1 rounded">FIRST10</span>
+                Your first script analysis for just $10 — discount applied automatically.
               </p>
             </div>
           </div>
@@ -128,7 +128,11 @@ export default function PricingPage() {
               </p>
               <p className="flex items-start">
                 <span className="text-[#c9a962] mr-3 mt-1">✓</span>
-                <span><strong>Quality assurance:</strong> Emmy-winning methodology on every analysis</span>
+                <span><strong>Quality assurance:</strong> Every analysis built on Emmy-winning methodology</span>
+              </p>
+              <p className="flex items-start">
+                <span className="text-[#c9a962] mr-3 mt-1">✓</span>
+                <span><strong>VIP sessions:</strong> Scheduled within 24 hours of purchase</span>
               </p>
             </div>
             <div className="text-center mt-8 pt-8 border-t border-gray-100">
@@ -147,10 +151,10 @@ export default function PricingPage() {
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-serif font-bold text-[#0a1628] mb-6">
-            Begin with Complimentary Analysis
+            Ready to Analyze Your Script?
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Experience the difference of professional-grade coverage
+            AI-powered coverage built on real industry expertise. Your first script just $10.
           </p>
           <Link
             href="/analyze"

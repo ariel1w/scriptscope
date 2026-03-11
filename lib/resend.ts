@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 
 const fromEmail = 'ScriptScope <onboarding@resend.dev>';
 const ownerEmail = process.env.OWNER_EMAIL || 'ariel@example.com';
+const replyTo = 'ariel1w@gmail.com';
 
 // Lazy initialization to avoid errors during build
 let resendClient: Resend | null = null;
@@ -169,6 +170,7 @@ export async function sendDailyDigestEmail(stats: {
     await getResend().emails.send({
       from: fromEmail,
       to: ownerEmail,
+      replyTo,
       subject: `ScriptScope Daily Digest - ${stats.date}`,
       html: `
         <h1>Daily Digest - ${stats.date}</h1>
@@ -193,6 +195,178 @@ export async function sendDailyDigestEmail(stats: {
     });
   } catch (error) {
     console.error('Failed to send daily digest email:', error);
+  }
+}
+
+export async function sendVIPConfirmationEmail(to: string) {
+  try {
+    const { error } = await getResend().emails.send({
+      from: fromEmail,
+      to,
+      replyTo,
+      subject: 'Your VIP Session is Confirmed - ScriptScope',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #0a1628 0%, #1a3a5f 100%); color: white; padding: 32px; text-align: center; border-radius: 8px 8px 0 0; border-bottom: 3px solid #c9a962; }
+            .content { background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div style="color: #c9a962; font-size: 13px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px;">ScriptScope VIP</div>
+              <h1 style="margin: 0; font-size: 26px; font-weight: 700;">Your VIP Session is Confirmed</h1>
+            </div>
+            <div class="content">
+              <p style="font-size: 16px; margin-top: 0;">Thank you for booking your VIP Session.</p>
+              <p>Your coverage report is being generated. Our team will reach out within 24 hours to schedule your VIP session.</p>
+              <p style="color: #444;">In your session you will:</p>
+              <ul style="color: #444; line-height: 2.2;">
+                <li>Review your AI coverage report with our Emmy-winning founder</li>
+                <li>Get insider development notes and real, actionable feedback</li>
+                <li>Walk away with a clear path forward for your script</li>
+              </ul>
+              <p style="margin-top: 28px; font-size: 14px; color: #666;">
+                Questions before your session? Reply to this email and we will get back to you promptly.
+              </p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} ScriptScope. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+    if (error) console.error('Failed to send VIP confirmation:', error);
+  } catch (error) {
+    console.error('Failed to send VIP confirmation email:', error);
+  }
+}
+
+export async function sendOwnerPurchaseNotification(
+  customerName: string,
+  customerEmail: string,
+  tier: string,
+  amountPaid: number,
+  timestamp: string,
+) {
+  try {
+    const formattedTime = new Date(timestamp).toLocaleString('en-US', {
+      timeZone: 'America/New_York',
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const { error } = await getResend().emails.send({
+      from: fromEmail,
+      to: 'ariel1w@gmail.com',
+      replyTo,
+      subject: `New Purchase: ${tier}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #0a1628; border-bottom: 3px solid #c9a962; padding-bottom: 10px; margin-top: 0;">
+            New ScriptScope Purchase
+          </h2>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+            <tr>
+              <td style="padding: 10px 0; color: #666; width: 140px; font-size: 14px;"><strong>Customer</strong></td>
+              <td style="padding: 10px 0; font-size: 15px;">${customerName}</td>
+            </tr>
+            <tr style="border-top: 1px solid #f3f4f6;">
+              <td style="padding: 10px 0; color: #666; font-size: 14px;"><strong>Email</strong></td>
+              <td style="padding: 10px 0; font-size: 15px;"><a href="mailto:${customerEmail}" style="color: #0a1628;">${customerEmail}</a></td>
+            </tr>
+            <tr style="border-top: 1px solid #f3f4f6;">
+              <td style="padding: 10px 0; color: #666; font-size: 14px;"><strong>Tier</strong></td>
+              <td style="padding: 10px 0; font-weight: 700; color: #0a1628; font-size: 15px;">${tier}</td>
+            </tr>
+            <tr style="border-top: 1px solid #f3f4f6;">
+              <td style="padding: 10px 0; color: #666; font-size: 14px;"><strong>Amount paid</strong></td>
+              <td style="padding: 10px 0; font-weight: 700; color: #c9a962; font-size: 18px;">$${amountPaid.toFixed(2)}</td>
+            </tr>
+            <tr style="border-top: 1px solid #f3f4f6;">
+              <td style="padding: 10px 0; color: #666; font-size: 14px;"><strong>Time</strong></td>
+              <td style="padding: 10px 0; font-size: 14px; color: #555;">${formattedTime} ET</td>
+            </tr>
+          </table>
+        </div>
+      `,
+    });
+    if (error) console.error('Failed to send owner notification:', error);
+  } catch (error) {
+    console.error('Failed to send owner purchase notification:', error);
+  }
+}
+
+export async function sendSubscriberWelcomeEmail(to: string) {
+  const unsubscribeUrl = `https://scriptscope.online/api/unsubscribe?email=${encodeURIComponent(to)}`;
+  try {
+    await getResend().emails.send({
+      from: fromEmail,
+      to,
+      subject: "You're on the ScriptScope launch list!",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; }
+            .container { max-width: 580px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #0a1628 0%, #1a3a5f 100%); color: white; padding: 32px; text-align: center; border-radius: 8px 8px 0 0; border-bottom: 3px solid #c9a962; }
+            .content { background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; }
+            .highlight { background: #fdf7ed; border: 1px solid #c9a962/30; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+            .btn { background: #c9a962; color: #0a1628; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 700; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; color: #9ca3af; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div style="color: #c9a962; font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px;">ScriptScope</div>
+              <h1 style="margin: 0; font-size: 26px; font-weight: 700;">You're on the list! 🎬</h1>
+            </div>
+            <div class="content">
+              <p style="font-size: 16px; margin-top: 0;">Thanks for signing up — you're among the first to know when ScriptScope goes live.</p>
+
+              <div class="highlight">
+                <p style="margin: 0; font-weight: 600; color: #0a1628;">What to expect when we launch:</p>
+                <ul style="color: #444; margin: 10px 0 0; padding-left: 20px; line-height: 2;">
+                  <li>An exclusive early-bird discount — just for you</li>
+                  <li>AI-powered script coverage built on Emmy-winning methodology</li>
+                  <li>Professional-depth analysis in minutes, not weeks</li>
+                </ul>
+              </div>
+
+              <p>While you wait, our free screenwriting community is open now. Get craft tips, real talk about the writing process, and insights from an Emmy-winning producer.</p>
+
+              <div style="text-align: center;">
+                <a href="https://scriptscope.online/blog" class="btn">Join the Community →</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} ScriptScope. All rights reserved.</p>
+              <p style="margin-top: 4px;">
+                <a href="${unsubscribeUrl}" style="color: #9ca3af; text-decoration: underline;">Unsubscribe</a>
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+  } catch (error) {
+    console.error('Failed to send subscriber welcome email:', error);
   }
 }
 

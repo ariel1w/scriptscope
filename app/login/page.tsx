@@ -12,9 +12,7 @@ export default function LoginPage() {
   useEffect(() => {
     // If already logged in, redirect
     if (user) {
-      const redirectTo = sessionStorage.getItem('redirectAfterLogin') || '/analyze';
-      sessionStorage.removeItem('redirectAfterLogin');
-      router.push(redirectTo);
+      router.push('/analyze');
     }
   }, [user, router]);
 

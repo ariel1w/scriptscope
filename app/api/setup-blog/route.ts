@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
 
     // Insert AI personas directly using Supabase client
     const personas = [
+      { name: 'Script Doctor', username: 'scriptdoctor', avatar: 'SD', bg: '1E3A5F', color: 'c9a962', personality: 'formal', style: { lowercase: false, slang: false, detailed: true, mistakes: false } },
       { name: 'Sarah Martinez', username: 'sarahwrites', avatar: 'SM', bg: 'e91e63', personality: 'casual', style: { lowercase: true, slang: true, detailed: false, mistakes: true } },
       { name: 'Dr. Michael Chen', username: 'mchenphd', avatar: 'MC', bg: '3f51b5', personality: 'formal', style: { lowercase: false, slang: false, detailed: true, mistakes: false } },
       { name: 'Jamie K', username: 'jamiek_writer', avatar: 'JK', bg: 'ff9800', personality: 'casual', style: { lowercase: true, slang: true, detailed: false, mistakes: true } },
@@ -23,10 +24,10 @@ export async function POST(request: NextRequest) {
       { name: 'Chris Anderson', username: 'chrisanderson', avatar: 'CA', bg: '795548', personality: 'skeptical', style: { lowercase: false, slang: false, detailed: true, mistakes: false } },
     ];
 
-    const personasToInsert = personas.map(p => ({
+    const personasToInsert = personas.map((p: any) => ({
       username: p.username,
       name: p.name,
-      avatar_url: `https://ui-avatars.com/api/?name=${p.avatar}&background=${p.bg}&color=fff`,
+      avatar_url: `https://ui-avatars.com/api/?name=${p.avatar}&background=${p.bg}&color=${p.color ?? 'fff'}`,
       personality: p.personality,
       writing_style: p.style,
       is_randomizer: false,

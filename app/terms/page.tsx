@@ -98,17 +98,13 @@ export default function TermsPage() {
           </ul>
 
           <h2 className="text-2xl font-bold text-[#1E3A5F] mt-8 mb-4">8. Refunds</h2>
-          <ul className="list-disc pl-6 space-y-1">
-            <li>Unused credits may be refunded within 30 days of purchase</li>
-            <li>Credits that have been used for analysis are non-refundable</li>
-            <li>If our service fails to deliver an analysis due to technical error, you will receive a full refund or credit restoration</li>
-            <li>
-              <Link href="/contact" className="text-[#1E3A5F] underline hover:text-[#c9a962]">
-                Contact us
-              </Link>
-              {' '}for refund requests
-            </li>
-          </ul>
+          <p>
+            Customers are entitled to a full refund within 14 days of purchase, no exceptions or conditions.{' '}
+            <Link href="/contact" className="text-[#1E3A5F] underline hover:text-[#c9a962]">
+              Contact us
+            </Link>
+            {' '}to request your refund.
+          </p>
 
           <h2 className="text-2xl font-bold text-[#1E3A5F] mt-8 mb-4">9. Acceptable Use</h2>
           <p>You agree NOT to:</p>

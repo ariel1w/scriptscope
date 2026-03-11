@@ -57,6 +57,14 @@ function pickEmotion(tier: TierType): EmotionType {
   return pickRandom(['agreeing', 'excited', 'relatable', 'humorous', 'frustrated', 'sarcastic', 'curious'] as EmotionType[]);
 }
 
+function replaceDashes(text: string): string {
+  if (!text) return text;
+  // Line-start em/en dash (list-like) → regular hyphen; inline → comma+space
+  return text
+    .replace(/\n *[—–] */g, '\n- ')
+    .replace(/ *[—–] */g, ', ');
+}
+
 function applyWritingStyle(text: string, style: AIPersona['writing_style']): string {
   let result = text;
   if (style.lowercase) {
@@ -125,12 +133,97 @@ Your personality: ${personalityHint}${referenceClause}
 
 RULES — non-negotiable:
 - NEVER use: "great insights", "thanks for sharing", "well written", "love this", "fantastic", "valuable", "delve", "crucial"
+- NEVER use em dashes (—) or en dashes (–). Use commas, periods, or separate sentences instead.
 - No AI-sounding phrases. Sound like a real person typing quickly.
 - Fragments and informal punctuation are fine.
 - Write ONLY the comment. No quotes around it, no prefix like "Comment:".
 
 Article excerpt:
 ${postContent.substring(0, 600)}`;
+}
+
+// Script Doctor replies to particularly substantive comments
+async function generateScriptDoctorReply(
+  scriptDoctorId: string,
+  postId: string,
+  postTitle: string,
+  postContent: string,
+  parentComment: { id: string; author_name: string; content: string },
+  commentDate: Date,
+): Promise<void> {
+  const prompt = `You are Script Doctor, the brand voice for ScriptScope — a screenplay analysis platform. You occasionally jump into comments to respond to a writer who asked something genuinely worth addressing.
+
+Post title: "${postTitle}"
+
+${parentComment.author_name} wrote: "${parentComment.content}"
+
+Your voice:
+- You've read thousands of scripts. You give the kind of note a development exec gives, not a writing teacher.
+- Direct and specific. No "great question!" No flattery. Just answer the thing.
+- Warm but efficient. You respect writers enough not to hedge.
+- Use a real example when it sharpens the answer — a specific film, scene, or technique.
+- 2-4 sentences. Not a lecture, just the thing they need to know.
+- Sound like a person typing a reply, not writing an essay.
+- NEVER use em dashes (—) or en dashes (–). Use commas or periods instead.
+
+Article excerpt:
+${postContent.substring(0, 400)}
+
+Write ONLY the reply. No quotes around it, no prefix.`;
+
+  const msg = await anthropic.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 280,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const replyText = msg.content[0].type === 'text'
+    ? replaceDashes(msg.content[0].text.replace(/^["']|["']$/g, '').trim())
+    : '';
+
+  if (!replyText) return;
+
+  // Reply appears 2–8 hours after the parent comment
+  const replyDate = new Date(commentDate.getTime() + (2 + Math.random() * 6) * 3_600_000);
+
+  await supabaseAdmin.from('blog_comments').insert({
+    post_id: postId,
+    persona_id: scriptDoctorId,
+    author_name: 'Script Doctor',
+    content: replyText,
+    parent_comment_id: parentComment.id,
+    created_at: replyDate.toISOString(),
+  });
+}
+
+// Script Doctor upvotes genuinely good comments (long, helpful, or insightful)
+async function scriptDoctorUpvotes(
+  scriptDoctorId: string,
+  insertedComments: Array<{ id: string; content: string; tier: TierType; emotion: EmotionType }>,
+): Promise<void> {
+  for (const c of insertedComments) {
+    const wordCount = c.content.split(/\s+/).length;
+    let upvoteChance = 0;
+
+    if (c.tier === 'long' || c.emotion === 'helping' || c.emotion === 'grateful') {
+      upvoteChance = 0.75;
+    } else if (c.tier === 'medium' && wordCount > 25) {
+      upvoteChance = 0.35;
+    } else if (c.tier === 'short' && wordCount > 12) {
+      upvoteChance = 0.15;
+    } else if (c.tier === 'negative' || c.emotion === 'negative') {
+      upvoteChance = 0; // Script Doctor doesn't upvote negative/dismissive comments
+    }
+
+    if (upvoteChance > 0 && Math.random() < upvoteChance) {
+      try {
+        await supabaseAdmin.from('comment_upvotes').insert({
+          comment_id: c.id,
+          persona_id: scriptDoctorId,
+        });
+      } catch { /* ignore duplicate upvote errors */ }
+    }
+  }
 }
 
 // postDate: the post's publish date — comments stagger forward from here
@@ -142,16 +235,21 @@ export async function generateCommentForPost(
 ): Promise<void> {
   const baseDate = postDate ?? new Date();
 
-  const { data: personas } = await supabaseAdmin
+  const { data: allPersonas } = await supabaseAdmin
     .from('ai_personas')
-    .select('*')
-    .eq('is_randomizer', false);
+    .select('*');
 
-  if (!personas?.length) return;
+  const personas = (allPersonas ?? []).filter((p: any) => !p.is_randomizer && p.username !== 'scriptdoctor');
+  const scriptDoctor = (allPersonas ?? []).find((p: any) => p.username === 'scriptdoctor');
+
+  if (!personas.length) return;
 
   const numComments = Math.floor(Math.random() * 4) + 3; // 3–6
   const selected = [...personas].sort(() => Math.random() - 0.5).slice(0, numComments);
   const prevCommenters: string[] = [];
+
+  // Track inserted comments for upvoting and Script Doctor reply selection
+  const insertedComments: Array<{ id: string; content: string; tier: TierType; emotion: EmotionType; date: Date; author_name: string }> = [];
 
   for (let i = 0; i < selected.length; i++) {
     const persona = selected[i] as AIPersona;
@@ -180,18 +278,22 @@ export async function generateCommentForPost(
         messages: [{ role: 'user', content: prompt }],
       });
       commentText = msg.content[0].type === 'text' ? msg.content[0].text : 'so true';
-      commentText = commentText.replace(/^["']|["']$/g, '').trim();
+      commentText = replaceDashes(commentText.replace(/^["']|["']$/g, '').trim());
     }
 
     commentText = applyWritingStyle(commentText, persona.writing_style);
 
-    await supabaseAdmin.from('blog_comments').insert({
+    const { data: inserted } = await supabaseAdmin.from('blog_comments').insert({
       post_id: postId,
       persona_id: persona.id,
       author_name: persona.name,
       content: commentText,
       created_at: commentDate.toISOString(),
-    });
+    }).select('id').single();
+
+    if (inserted) {
+      insertedComments.push({ id: inserted.id, content: commentText, tier, emotion, date: commentDate, author_name: persona.name });
+    }
 
     prevCommenters.push(persona.name);
   }
@@ -199,6 +301,29 @@ export async function generateCommentForPost(
   // 55% chance of a random-name commenter
   if (Math.random() < 0.55) {
     await generateRandomizerComment(postId, postTitle, postContent, baseDate, prevCommenters);
+  }
+
+  // Script Doctor upvotes best comments (~30% of posts get SD upvotes)
+  if (scriptDoctor && insertedComments.length > 0 && Math.random() < 0.7) {
+    await scriptDoctorUpvotes(scriptDoctor.id, insertedComments);
+  }
+
+  // Script Doctor replies to one substantive comment (~25% of posts)
+  if (scriptDoctor && Math.random() < 0.25) {
+    const candidates = insertedComments.filter(
+      (c) => (c.tier === 'long' || c.tier === 'medium') && c.emotion !== 'negative',
+    );
+    if (candidates.length > 0) {
+      const target = pickRandom(candidates);
+      await generateScriptDoctorReply(
+        scriptDoctor.id,
+        postId,
+        postTitle,
+        postContent,
+        { id: target.id, author_name: target.author_name, content: target.content },
+        target.date,
+      );
+    }
   }
 
   console.log(`Generated comments for: ${postTitle}`);
@@ -232,7 +357,7 @@ async function generateRandomizerComment(
       messages: [{ role: 'user', content: prompt }],
     });
     text = msg.content[0].type === 'text' ? msg.content[0].text : 'interesting';
-    text = text.replace(/^["']|["']$/g, '').trim();
+    text = replaceDashes(text.replace(/^["']|["']$/g, '').trim());
   }
 
   if (Math.random() > 0.5) text = text.toLowerCase();

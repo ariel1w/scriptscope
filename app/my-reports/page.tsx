@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase-client';
 import Link from 'next/link';
 
+
 interface Script {
   id: string;
   title: string;
@@ -33,18 +34,18 @@ export default function MyReportsPage() {
   }, [user, authLoading, router]);
 
   async function loadScripts() {
-    if (!user?.email) return;
+    if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('scripts')
-        .select('id, title, created_at, status, analysis')
-        .eq('email', user.email)
-        .order('created_at', { ascending: false });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('No session');
 
-      if (error) throw error;
-
-      setScripts(data || []);
+      const res = await fetch('/api/my-reports', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.ok) throw new Error('Failed to load');
+      const json = await res.json();
+      setScripts(json.scripts || []);
     } catch (error) {
       console.error('Error loading scripts:', error);
     } finally {

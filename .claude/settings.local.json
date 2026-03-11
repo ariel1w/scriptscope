@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vercel --prod:*)",
+      "Bash(npm run build:*)",
+      "WebSearch",
+      "Bash(curl:*)",
+      "Bash(vercel env add:*)",
+      "Bash(start:*)",
+      "Bash(explorer.exe \"C:\\\\Users\\\\user\\\\scriptscope\\\\my-app\\\\public\\\\generate-logo.html\")"
+    ]
+  }
+}

@@ -44,6 +44,11 @@ export async function sendDailyDigest(): Promise<void> {
     .gte('created_at', yesterday.toISOString())
     .lt('created_at', today.toISOString());
 
+  // Get total email subscribers
+  const { count: subscriberCount } = await supabaseAdmin
+    .from('email_subscribers')
+    .select('*', { count: 'exact', head: true });
+
   // Get daily stats for revenue
   const yesterdayDate = yesterday.toISOString().split('T')[0];
   const { data: stats } = await supabaseAdmin
@@ -79,6 +84,9 @@ export async function sendDailyDigest(): Promise<void> {
         </li>
         <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
           <strong>New Signups:</strong> ${newUsers?.length || 0}
+        </li>
+        <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+          📧 <strong>Mailing list:</strong> ${subscriberCount ?? 0} subscribers
         </li>
       </ul>
 
@@ -130,12 +138,19 @@ export async function sendDailyDigest(): Promise<void> {
   `;
 
   // Send email
-  await resend.emails.send({
-    from: 'ScriptScope Daily <digest@scriptscope.online>',
+  // NOTE: using onboarding@resend.dev until scriptscope.online is verified in Resend.
+  // To use a custom from address, verify the domain at https://resend.com/domains
+  const { data: emailData, error: emailError } = await resend.emails.send({
+    from: 'ScriptScope <onboarding@resend.dev>',
     to: process.env.OWNER_EMAIL || 'ariel1w@gmail.com',
     subject: `ScriptScope Daily Digest - ${yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
     html: emailHtml,
   });
 
-  console.log('Daily digest sent successfully');
+  if (emailError) {
+    console.error('Resend error:', emailError);
+    throw new Error(`Failed to send email: ${emailError.message}`);
+  }
+
+  console.log('Daily digest sent successfully. Email id:', emailData?.id);
 }

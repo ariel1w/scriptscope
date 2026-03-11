@@ -1,9 +1,10 @@
 export async function extractTextFromPDF(buffer: Buffer): Promise<{ text: string; pageCount: number }> {
   try {
 
-    // Use eval require to bypass module resolution issues with Turbopack
-    // pdf-parse 1.1.1 exports a function directly
-    const pdfParse = eval('require')('pdf-parse');
+    // pdf-parse is declared as serverExternalPackages in next.config.ts so it
+    // resolves from node_modules at runtime (works in both dev and production).
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const pdfParse = require('pdf-parse');
 
     const data = await pdfParse(buffer);
 

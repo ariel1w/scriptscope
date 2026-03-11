@@ -46,17 +46,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'check') {
-      // Check if user has access (credits or trial)
-      const hasAccess = credit.credits_remaining > 0 || !credit.trial_used;
+      const hasAccess = credit.credits_remaining > 0;
       return NextResponse.json({
         hasAccess,
         credits: credit.credits_remaining,
-        trialAvailable: !credit.trial_used,
       });
     }
 
     if (action === 'use') {
-      // Deduct 1 credit or mark trial as used
       if (credit.credits_remaining > 0) {
         const { error: updateError } = await supabaseAdmin
           .from('credits')
@@ -74,24 +71,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: true,
           creditsRemaining: credit.credits_remaining - 1,
-        });
-      } else if (!credit.trial_used) {
-        const { error: updateError } = await supabaseAdmin
-          .from('credits')
-          .update({
-            trial_used: true,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('email', email);
-
-        if (updateError) {
-          console.error('Update error:', updateError);
-          return NextResponse.json({ error: 'Failed to use trial' }, { status: 500 });
-        }
-
-        return NextResponse.json({
-          success: true,
-          usedTrial: true,
         });
       } else {
         return NextResponse.json({ error: 'No credits available' }, { status: 403 });

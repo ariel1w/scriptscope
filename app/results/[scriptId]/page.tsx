@@ -31,7 +31,7 @@ export default function ResultsPage() {
 
     const checkStatus = async () => {
       try {
-        const response = await fetch(`/api/script-status?scriptId=${scriptId}`);
+        const response = await fetch(`/api/script-status?scriptId=${scriptId}&userId=${user.id}`);
         const data = await response.json();
 
         if (!response.ok) {

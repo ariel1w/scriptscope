@@ -6,24 +6,35 @@ import { sendReportReadyEmail, sendAnalysisFailedEmail } from '@/lib/resend';
 
 export async function POST(request: NextRequest) {
   try {
-    const { scriptId, email, promoDiscount = 0 } = await request.json();
+    const { scriptId, email, promoDiscount = 0, internalSecret } = await request.json();
 
     if (!scriptId || !email) {
       return NextResponse.json({ error: 'Missing scriptId or email' }, { status: 400 });
     }
 
     const isFreeWithPromo = promoDiscount === 100;
+    // Trusted internal call from webhook (payment already verified by LS signature)
+    const isWebhookTriggered = internalSecret === process.env.CRON_SECRET;
 
-    if (!isFreeWithPromo) {
-      const creditResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/credits`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, action: 'use' }),
-      });
+    if (!isFreeWithPromo && !isWebhookTriggered) {
+      // Check and deduct credit via supabaseAdmin directly
+      const { data: creditRow } = await supabaseAdmin
+        .from('credits')
+        .select('credits_remaining')
+        .eq('email', email)
+        .single();
 
-      if (!creditResponse.ok) {
+      if (!creditRow || creditRow.credits_remaining <= 0) {
         return NextResponse.json({ error: 'No credits available' }, { status: 403 });
       }
+
+      await supabaseAdmin
+        .from('credits')
+        .update({
+          credits_remaining: creditRow.credits_remaining - 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('email', email);
     }
 
     // Get script
@@ -65,14 +76,7 @@ export async function POST(request: NextRequest) {
         throw new Error('Failed to save analysis');
       }
 
-      if (promoDiscount === 74 && script.user_id) {
-        await supabaseAdmin
-          .from('users')
-          .update({ first_discount_used: true })
-          .eq('id', script.user_id);
-      }
-
-      // Increment daily stats counter
+      // Increment daily stats
       const today = new Date().toISOString().split('T')[0];
       const { data: existingStats } = await supabaseAdmin
         .from('daily_stats')
@@ -83,35 +87,21 @@ export async function POST(request: NextRequest) {
       if (existingStats) {
         await supabaseAdmin
           .from('daily_stats')
-          .update({
-            scripts_analyzed: existingStats.scripts_analyzed + 1,
-          })
+          .update({ scripts_analyzed: existingStats.scripts_analyzed + 1 })
           .eq('date', today);
       } else {
         await supabaseAdmin
           .from('daily_stats')
-          .insert({
-            date: today,
-            scripts_analyzed: 1,
-            revenue: 0,
-            signups: 0,
-            refunds: 0,
-          });
+          .insert({ date: today, scripts_analyzed: 1, revenue: 0, signups: 0, refunds: 0 });
       }
 
-      // Send email with link to results page
       const reportUrl = `${process.env.NEXT_PUBLIC_APP_URL}/results/${scriptId}`;
       await sendReportReadyEmail(email, script.title, reportUrl);
 
-      return NextResponse.json({
-        success: true,
-        analysis,
-        scriptId,
-      });
+      return NextResponse.json({ success: true, analysis, scriptId });
     } catch (analysisError) {
       console.error('[Analyze] Analysis error:', analysisError);
 
-      // Mark as failed
       await supabaseAdmin
         .from('scripts')
         .update({
@@ -120,26 +110,33 @@ export async function POST(request: NextRequest) {
         })
         .eq('id', scriptId);
 
-      if (!isFreeWithPromo) {
-        await supabaseAdmin.rpc('increment_credits', {
-          user_email: email,
-          amount: 1,
-        });
+      // Restore credit on failure (unless free or webhook-triggered — webhook will handle refund separately)
+      if (!isFreeWithPromo && !isWebhookTriggered) {
+        const { data: creditRow } = await supabaseAdmin
+          .from('credits')
+          .select('credits_remaining')
+          .eq('email', email)
+          .single();
+        if (creditRow) {
+          await supabaseAdmin
+            .from('credits')
+            .update({ credits_remaining: creditRow.credits_remaining + 1 })
+            .eq('email', email);
+        }
       }
 
-      // Send failure email
       await sendAnalysisFailedEmail(email, script.title);
 
       return NextResponse.json({
         error: 'Analysis failed',
-        details: (analysisError as Error).message
+        details: (analysisError as Error).message,
       }, { status: 500 });
     }
   } catch (error) {
     console.error('[Analyze] Top-level error:', error);
     return NextResponse.json({
       error: 'Server error',
-      details: (error as Error).message
+      details: (error as Error).message,
     }, { status: 500 });
   }
 }

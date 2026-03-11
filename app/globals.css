@@ -138,3 +138,12 @@ h1, h2, h3, h4, h5, h6 {
 .live-indicator-green {
   animation: liveGreenPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Dynamic viewport height — fixes cut-off in TikTok/Instagram in-app browsers
+   where 100vh = full screen (including the app's own chrome bars).
+   100dvh adjusts dynamically to the actual usable viewport. */
+.dvh-section {
+  height: calc(100vh - 5rem); /* fallback for older browsers */
+  height: calc(100dvh - 5rem);
+}
+
