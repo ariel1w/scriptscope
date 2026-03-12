@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-const fromEmail = 'ScriptScope <onboarding@resend.dev>';
+const fromEmail = 'ScriptScope <noreply@scriptscope.online>';
 const ownerEmail = process.env.OWNER_EMAIL || 'ariel@example.com';
 const replyTo = 'ariel1w@gmail.com';
 
