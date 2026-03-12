@@ -1,5 +1,5 @@
 import Link from 'next/link';
-// import ScriptsAnalyzedToday from '@/components/ScriptsAnalyzedToday'; // beta: hidden until we have real data
+import ScriptsCounter from '@/components/ScriptsCounter';
 
 export default function Home() {
   return (
@@ -39,7 +39,11 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-5 sm:mb-10">
+            <div className="flex justify-center mb-4 sm:mb-6">
+              <ScriptsCounter variant="dark" />
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
               <Link
                 href="/analyze"
                 className="btn-gold px-8 sm:px-10 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg inline-block"
@@ -53,12 +57,6 @@ export default function Home() {
                 View Pricing
               </Link>
             </div>
-
-            {/* beta: scripts analyzed counter hidden until we have real data
-            <div className="pt-4 sm:pt-6 border-t border-white/10">
-              <ScriptsAnalyzedToday />
-            </div>
-            */}
           </div>
         </div>
       </section>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import UploadZone from '@/components/UploadZone';
+import ScriptsCounter from '@/components/ScriptsCounter';
 
 type Step = 'loading' | 'upload' | 'email' | 'uploading' | 'package' | 'success' | 'error';
 
@@ -152,6 +153,9 @@ export default function AnalyzePage() {
               </span>
             </div>
           )}
+          <div className="mt-4 flex justify-center">
+            <ScriptsCounter />
+          </div>
         </div>
 
         {/* Step 1: Upload */}

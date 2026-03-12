@@ -7,7 +7,11 @@
       "Bash(curl:*)",
       "Bash(vercel env add:*)",
       "Bash(start:*)",
-      "Bash(explorer.exe \"C:\\\\Users\\\\user\\\\scriptscope\\\\my-app\\\\public\\\\generate-logo.html\")"
+      "Bash(explorer.exe \"C:\\\\Users\\\\user\\\\scriptscope\\\\my-app\\\\public\\\\generate-logo.html\")",
+      "Bash(find C:\\\\\\\\Users\\\\\\\\user\\\\\\\\scriptscope\\\\\\\\my-app\\\\\\\\supabase -name \"*.sql\" -type f 2>/dev/null | head -20)",
+      "Bash(find C:\\\\\\\\Users\\\\\\\\user\\\\\\\\scriptscope\\\\\\\\my-app -name \"*.sql\" -type f 2>/dev/null | xargs grep -l \"CREATE TABLE.*scripts\" 2>/dev/null)",
+      "Bash(cd C:/Users/user/scriptscope/my-app && npx tsc --noEmit 2>&1 | head -40)",
+      "Bash(ls C:/Users/user/scriptscope/my-app/components/Scripts*)"
     ]
   }
 }
