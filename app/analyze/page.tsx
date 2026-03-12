@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import UploadZone from '@/components/UploadZone';
 import ScriptsCounter from '@/components/ScriptsCounter';
+import NewsletterModal from '@/components/NewsletterModal';
 
 type Step = 'loading' | 'upload' | 'email' | 'uploading' | 'package' | 'success' | 'error';
 
@@ -140,6 +141,8 @@ export default function AnalyzePage() {
   }
 
   return (
+    <>
+    <NewsletterModal triggerType="exit" />
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
@@ -319,5 +322,6 @@ export default function AnalyzePage() {
         )}
       </div>
     </div>
+    </>
   );
 }
