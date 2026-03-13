@@ -97,8 +97,8 @@ function buildEmailHtml(posts: PostRow[], hotPost: PostRow | null, unsubEmail: s
     <div style="border: 2px solid #c9a962; border-radius: 10px; padding: 24px 28px; margin: 24px 0; text-align: center; background: #fdf7ed;">
       <div style="color: #c9a962; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;">ScriptScope</div>
       <p style="margin: 0 0 6px; font-size: 17px; font-weight: 700; color: #0a1628; line-height: 1.4;">Try ScriptScope — your first script analysis is just $10</p>
-      <p style="margin: 0 0 18px; font-size: 14px; color: #555;">Professional-depth AI coverage built on Emmy-winning methodology. Get your report in minutes.</p>
-      <a href="${BASE_URL}" style="display: inline-block; background: #c9a962; color: #0a1628; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 8px; text-decoration: none;">Analyze My Script →</a>
+      <p style="margin: 0 0 18px; font-size: 14px; color: #555;">Professional coverage powered by Emmy-winning methodology.</p>
+      <a href="${BASE_URL}/pricing" style="display: inline-block; background: #c9a962; color: #0a1628; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 8px; text-decoration: none;">Get Your Coverage for $10</a>
     </div>
 
     <!-- Footer -->
