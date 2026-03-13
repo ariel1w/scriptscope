@@ -315,7 +315,7 @@ export async function sendSubscriberWelcomeEmail(to: string) {
     await getResend().emails.send({
       from: fromEmail,
       to,
-      subject: "You're on the ScriptScope launch list!",
+      subject: 'Welcome to the ScriptScope community!',
       html: `
         <!DOCTYPE html>
         <html>
@@ -334,24 +334,24 @@ export async function sendSubscriberWelcomeEmail(to: string) {
           <div class="container">
             <div class="header">
               <div style="color: #c9a962; font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px;">ScriptScope</div>
-              <h1 style="margin: 0; font-size: 26px; font-weight: 700;">You're on the list! 🎬</h1>
+              <h1 style="margin: 0; font-size: 26px; font-weight: 700;">Welcome to the community!</h1>
             </div>
             <div class="content">
-              <p style="font-size: 16px; margin-top: 0;">Thanks for signing up — you're among the first to know when ScriptScope goes live.</p>
+              <p style="font-size: 16px; margin-top: 0;">You're now an active member of the ScriptScope community — welcome aboard.</p>
 
               <div class="highlight">
-                <p style="margin: 0; font-weight: 600; color: #0a1628;">What to expect when we launch:</p>
+                <p style="margin: 0; font-weight: 600; color: #0a1628;">Here's what you'll get as a member:</p>
                 <ul style="color: #444; margin: 10px 0 0; padding-left: 20px; line-height: 2;">
-                  <li>An exclusive early-bird discount — just for you</li>
-                  <li>AI-powered script coverage built on Emmy-winning methodology</li>
-                  <li>Professional-depth analysis in minutes, not weeks</li>
+                  <li>The latest posts and insights delivered to your inbox</li>
+                  <li>Craft tips and real talk about the writing process</li>
+                  <li>Insights from an Emmy-winning producer</li>
                 </ul>
               </div>
 
-              <p>While you wait, our free screenwriting community is open now. Get craft tips, real talk about the writing process, and insights from an Emmy-winning producer.</p>
+              <p>Stay tuned — we publish regularly on screenwriting, script analysis, and the craft of storytelling.</p>
 
               <div style="text-align: center;">
-                <a href="https://scriptscope.online/blog" class="btn">Join the Community →</a>
+                <a href="https://scriptscope.online/blog" class="btn">Read the Latest Posts</a>
               </div>
             </div>
             <div class="footer">
