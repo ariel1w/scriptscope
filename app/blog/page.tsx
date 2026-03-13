@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase';
+import NewsletterSignup from './NewsletterSignup';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +39,7 @@ export default async function BlogPage() {
             <span className="font-bold text-[#0a1628]">Emmy-winning producer</span>
             {' '}and the writers who use them.
           </p>
+          <NewsletterSignup />
         </div>
 
         {posts && posts.length > 0 ? (
