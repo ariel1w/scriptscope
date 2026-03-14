@@ -60,6 +60,9 @@ export default function Home() {
                 View Pricing
               </Link>
             </div>
+            <p className="text-sm text-white/80 text-center mt-4">
+              🌍 Submit scripts in any language. Coverage delivered in English.
+            </p>
           </div>
         </div>
       </section>
@@ -75,10 +78,6 @@ export default function Home() {
               This isn't just another AI tool. There's a real Emmy-winning producer behind the methodology.
             </p>
           </div>
-
-          <p className="text-sm text-gray-400 mb-4 sm:mb-8">
-            Submit scripts in any language. Coverage delivered in English.
-          </p>
 
           <div className="grid md:grid-cols-3 gap-3 sm:gap-8 max-w-5xl mx-auto">
             <div className="bg-white p-4 sm:p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-gray-100">
