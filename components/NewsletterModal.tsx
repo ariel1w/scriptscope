@@ -9,6 +9,7 @@ interface NewsletterModalProps {
 const COPY = {
   headline: 'Free Tips From Working Screenwriters',
   body: 'Join 5,000+ writers getting weekly script tips, craft breakdowns, and industry insights — written by an Emmy-winning producer and our growing community. Free, always.',
+  multilingual: 'Submit scripts in any language. Coverage delivered in English.',
   placeholder: 'Your email address',
   button: 'Get the tips',
   finePrint: 'No spam. Unsubscribe anytime.',
@@ -136,9 +137,10 @@ export default function NewsletterModal({ triggerType }: NewsletterModalProps) {
             <h2 className="text-xl sm:text-2xl font-serif font-bold text-white mb-3 leading-tight">
               {COPY.headline}
             </h2>
-            <p className="text-sm sm:text-base text-gray-300 mb-5 leading-relaxed">
+            <p className="text-sm sm:text-base text-gray-300 mb-3 leading-relaxed">
               {COPY.body}
             </p>
+            <p className="text-xs text-gray-400 mb-5">{COPY.multilingual}</p>
 
             <form onSubmit={handleSubmit} className="space-y-3">
               <input

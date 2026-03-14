@@ -49,6 +49,11 @@ export default function FAQPage() {
       answer:
         'The analysis is for your personal use to improve your screenplay. It should not be presented as professional coverage or used as the sole basis for business decisions.',
     },
+    {
+      question: 'Can I upload a script in a language other than English?',
+      answer:
+        'Yes. ScriptScope accepts screenplays written in any language. Your coverage report will always be delivered in English.',
+    },
   ];
 
   return (

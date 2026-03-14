@@ -76,6 +76,10 @@ export default function Home() {
             </p>
           </div>
 
+          <p className="text-sm text-gray-400 mb-4 sm:mb-8">
+            Submit scripts in any language. Coverage delivered in English.
+          </p>
+
           <div className="grid md:grid-cols-3 gap-3 sm:gap-8 max-w-5xl mx-auto">
             <div className="bg-white p-4 sm:p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-gray-100">
               <div className="text-3xl sm:text-4xl mb-2 sm:mb-4">📋</div>

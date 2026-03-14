@@ -163,7 +163,12 @@ export default function AnalyzePage() {
 
         {/* Step 1: Upload */}
         {step === 'upload' && (
-          <UploadZone onFileSelect={handleFileSelect} disabled={false} />
+          <>
+            <UploadZone onFileSelect={handleFileSelect} disabled={false} />
+            <p className="text-center text-sm text-gray-400 mt-3">
+              Submit scripts in any language. Coverage delivered in English.
+            </p>
+          </>
         )}
 
         {/* Step 2: Email */}

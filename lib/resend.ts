@@ -345,6 +345,7 @@ export async function sendSubscriberWelcomeEmail(to: string) {
                   <li>The latest posts and insights delivered to your inbox</li>
                   <li>Craft tips and real talk about the writing process</li>
                   <li>Insights from an Emmy-winning producer</li>
+                  <li>Submit scripts in any language. Coverage delivered in English.</li>
                 </ul>
               </div>
 
