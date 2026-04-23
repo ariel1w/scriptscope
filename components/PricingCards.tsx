@@ -79,6 +79,20 @@ export default function PricingCards({ redirectUrl }: { redirectUrl?: string } =
   const { user, loading, signInWithGoogle } = useAuth();
   const [checkingOut, setCheckingOut] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [isFirstTime, setIsFirstTime] = useState(true);
+
+  // Check if user is first-time (eligible for $10 discount)
+  useEffect(() => {
+    if (!user?.email || loading) return;
+    fetch('/api/credits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user.email, action: 'check' }),
+    })
+      .then(r => r.json())
+      .then(data => setIsFirstTime(!!data.isFirstTime))
+      .catch(() => {});
+  }, [user, loading]);
 
   // After returning from Google login, auto-trigger pending checkout
   useEffect(() => {
@@ -166,11 +180,22 @@ export default function PricingCards({ redirectUrl }: { redirectUrl?: string } =
               <h3 className={`text-xl font-serif font-bold mb-3 ${plan.vip ? 'text-white' : 'text-[#0a1628]'}`}>
                 {plan.title}
               </h3>
-              <div className={`text-5xl font-serif font-bold mb-1 ${plan.vip ? 'text-white' : 'text-[#0a1628]'}`}>
-                {plan.price}
-              </div>
-              {plan.perScript && (
-                <div className="text-sm text-[#c9a962] font-semibold mt-0.5">{plan.perScript}</div>
+              {isFirstTime && plan.variantKey === 'single' ? (
+                <>
+                  <div className="text-5xl font-serif font-bold mb-1 text-[#0a1628]">$10</div>
+                  <div className="text-sm text-[#c9a962] font-semibold mt-0.5">
+                    <span className="line-through text-gray-400">$39</span> First script discount
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className={`text-5xl font-serif font-bold mb-1 ${plan.vip ? 'text-white' : 'text-[#0a1628]'}`}>
+                    {plan.price}
+                  </div>
+                  {plan.perScript && (
+                    <div className="text-sm text-[#c9a962] font-semibold mt-0.5">{plan.perScript}</div>
+                  )}
+                </>
               )}
               {plan.vip && (
                 <p className="text-[#c9a962] italic text-xs mt-3 leading-relaxed px-2">

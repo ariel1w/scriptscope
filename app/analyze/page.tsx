@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import UploadZone from '@/components/UploadZone';
 import ScriptsCounter from '@/components/ScriptsCounter';
-import NewsletterModal from '@/components/NewsletterModal';
+import ScriptIntakeModal from '@/components/ScriptIntakeModal';
 
 type Step = 'loading' | 'upload' | 'email' | 'uploading' | 'package' | 'success' | 'error';
 
@@ -43,6 +43,7 @@ export default function AnalyzePage() {
   const [hasCredits, setHasCredits] = useState(false);
   const [creditsRemaining, setCreditsRemaining] = useState(0);
   const [checkingOut, setCheckingOut] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -61,6 +62,7 @@ export default function AnalyzePage() {
       .then(data => {
         setHasCredits(!!data.hasAccess);
         setCreditsRemaining(data.credits ?? 0);
+        setIsFirstTime(!!data.isFirstTime);
       })
       .catch(() => {})
       .finally(() => setStep('upload'));
@@ -142,7 +144,7 @@ export default function AnalyzePage() {
 
   return (
     <>
-    <NewsletterModal triggerType="exit" />
+    <ScriptIntakeModal />
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
@@ -250,8 +252,19 @@ export default function AnalyzePage() {
                   )}
                   <div className="text-center mb-5 flex-1">
                     <h3 className="text-xl font-serif font-bold text-[#0a1628] mb-3">{pkg.title}</h3>
-                    <div className="text-5xl font-serif font-bold text-[#0a1628] mb-1">{pkg.price}</div>
-                    <p className="text-sm text-[#c9a962] font-semibold mt-1">{pkg.sub}</p>
+                    {isFirstTime && pkg.key === 'single' ? (
+                      <>
+                        <div className="text-5xl font-serif font-bold text-[#0a1628] mb-1">$10</div>
+                        <p className="text-sm text-[#c9a962] font-semibold mt-1">
+                          <span className="line-through text-gray-400">$39</span> First script discount
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-5xl font-serif font-bold text-[#0a1628] mb-1">{pkg.price}</div>
+                        <p className="text-sm text-[#c9a962] font-semibold mt-1">{pkg.sub}</p>
+                      </>
+                    )}
                   </div>
                   <button
                     onClick={() => handlePackageClick(pkg.key)}

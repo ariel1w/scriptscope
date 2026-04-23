@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import ScriptsCounter from '@/components/ScriptsCounter';
-import HomeNewsletterModals from '@/components/HomeNewsletterModals';
+import ScriptIntakeModal from '@/components/ScriptIntakeModal';
 
 export default function Home() {
   return (
     <>
-    <HomeNewsletterModals />
+    <ScriptIntakeModal />
     <div
       className="fixed inset-x-0 top-20 bottom-0 bg-white overflow-x-hidden overflow-y-scroll snap-y snap-proximity [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >

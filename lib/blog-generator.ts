@@ -101,8 +101,20 @@ Format your response as JSON:
   article.title = replaceDashes(article.title);
   article.content = replaceDashes(article.content);
   article.meta_description = replaceDashes(article.meta_description);
-  const slug = generateSlug(article.title);
+  let slug = generateSlug(article.title);
   const wordCount = article.content.split(/\s+/).length;
+
+  // Check for duplicate slug and append date suffix if needed
+  const { data: existing } = await supabaseAdmin
+    .from('content_queue')
+    .select('id')
+    .eq('platform', 'blog')
+    .eq('slug', slug)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    slug = `${slug}-${new Date().toISOString().split('T')[0]}`;
+  }
 
   // Insert into content_queue
   await supabaseAdmin.from('content_queue').insert({

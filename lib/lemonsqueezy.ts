@@ -7,7 +7,7 @@ export const LS_VARIANTS: Record<string, { variantId: number; credits: number; n
   vip:         { variantId: 0,       credits: 1,  name: 'ScriptScope VIP Session', isVip: true },
 };
 
-export async function createCheckoutUrl(variantId: number, email: string, redirectUrl?: string, scriptId?: string): Promise<string> {
+export async function createCheckoutUrl(variantId: number, email: string, redirectUrl?: string, scriptId?: string, discountCode?: string): Promise<string> {
   const apiKey = process.env.LEMONSQUEEZY_API_KEY;
   const storeId = process.env.LEMONSQUEEZY_STORE_ID;
   if (!apiKey || !storeId) throw new Error('Lemon Squeezy credentials not configured');
@@ -16,6 +16,7 @@ export async function createCheckoutUrl(variantId: number, email: string, redire
     checkout_data: {
       email,
       ...(scriptId ? { custom: { script_id: scriptId } } : {}),
+      ...(discountCode ? { discount_code: discountCode } : {}),
     },
   };
   attributes.checkout_options = { discount: true };

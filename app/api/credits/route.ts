@@ -47,9 +47,11 @@ export async function POST(request: NextRequest) {
 
     if (action === 'check') {
       const hasAccess = credit.credits_remaining > 0;
+      const isFirstTime = !credit.trial_used;
       return NextResponse.json({
         hasAccess,
         credits: credit.credits_remaining,
+        isFirstTime,
       });
     }
 
